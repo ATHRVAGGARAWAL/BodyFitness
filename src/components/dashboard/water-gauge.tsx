@@ -18,15 +18,16 @@ export function WaterGauge({
   const targetFill = Math.min(targetMl / 4_000, 1);
 
   return (
-    <div className="health-card relative min-h-[168px] overflow-hidden p-4">
-      <div className="relative z-10">
-        <p className="m-0 text-[13px] font-semibold text-white/42">Water</p>
-        <p className="number-font mb-0 mt-1 text-[28px] font-bold leading-none">
-          {(valueMl / 1_000).toFixed(2)}<span className="ml-1 text-xs tracking-normal text-white/38">L</span>
+    <div className="health-card relative min-h-[176px] overflow-hidden">
+      <div className="absolute inset-x-0 top-5 z-10 text-center">
+        <p className="m-0 text-[12px] font-semibold text-white/42">Water</p>
+        <p className="number-font mb-0 mt-1 text-[29px] font-bold leading-none">
+          {(valueMl / 1_000).toFixed(2)}
+          <span className="ml-1 text-xs tracking-normal text-white/38">L</span>
         </p>
       </div>
 
-      <svg className="absolute inset-x-0 bottom-0 h-[64%] w-full" viewBox="0 0 180 180" preserveAspectRatio="none">
+      <svg className="absolute inset-x-0 bottom-0 h-[67%] w-full" viewBox="0 0 180 180" preserveAspectRatio="none">
         <defs>
           <clipPath id={`fill-${id}`}>
             <motion.rect
@@ -52,17 +53,17 @@ export function WaterGauge({
           x2="172"
           y1={180 * (1 - targetFill)}
           y2={180 * (1 - targetFill)}
-          stroke="rgba(255,255,255,.75)"
+          stroke="var(--water-marker)"
           strokeDasharray="3 4"
         />
       </svg>
 
       <div className="absolute bottom-3 left-3 right-3 z-10 flex items-center justify-between">
-        <button aria-label="Remove 250 millilitres" onClick={() => onChange(-250)} className="glass flex h-10 w-10 items-center justify-center rounded-full">
+        <button aria-label="Remove 250 millilitres" onClick={() => onChange(-250)} className="gauge-control pressable">
           <Minus size={17} />
         </button>
-        <span className="rounded-full bg-black/35 px-2 py-1 text-[10px] font-semibold backdrop-blur-lg">Goal {(targetMl / 1_000).toFixed(1)}L</span>
-        <button aria-label="Add 250 millilitres" onClick={() => onChange(250)} className="glass flex h-10 w-10 items-center justify-center rounded-full">
+        <span className="gauge-goal">Goal {(targetMl / 1_000).toFixed(1)}L</span>
+        <button aria-label="Add 250 millilitres" onClick={() => onChange(250)} className="gauge-control pressable">
           <Plus size={17} />
         </button>
       </div>

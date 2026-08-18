@@ -48,11 +48,11 @@ function PhotoPanel({ photoId, label, demo, shade }: { photoId?: string; label: 
     return () => { if (objectUrl) URL.revokeObjectURL(objectUrl); };
   }, [photoId]);
   return (
-    <div className="relative overflow-hidden bg-[#101012]">
+    <div className="always-dark relative overflow-hidden bg-[#101012]">
       {/* Blob URLs are local user media and cannot be optimized by next/image. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {url ? <img src={url} alt={`${label} physique photo`} className="h-full w-full object-cover" /> : (
-        <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 50% 34%, rgba(${70 + shade * 9},${82 + shade * 5},${105 + shade * 7},.65), #111116 68%)` }}>
+        <div className="absolute inset-0" style={{ backgroundColor: `rgb(${32 + shade * 5}, ${35 + shade * 5}, ${43 + shade * 6})` }}>
           <div className="absolute left-1/2 top-[25%] h-12 w-10 -translate-x-1/2 rounded-full bg-white/8" />
           <div className="absolute left-1/2 top-[40%] h-28 w-16 -translate-x-1/2 rounded-[45%_45%_28%_28%] bg-white/[0.075] blur-[1px]" />
         </div>

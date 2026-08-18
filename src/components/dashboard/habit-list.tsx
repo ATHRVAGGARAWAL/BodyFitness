@@ -38,7 +38,7 @@ export function HabitList({
                 onClick={() => onToggle(habit.id)}
                 whileTap={{ scale: 0.99 }}
                 className={cn(
-                  "relative flex min-h-[56px] w-full items-center gap-3 bg-[#1c1c1e] px-4 text-left",
+                  "surface-row relative flex min-h-[56px] w-full items-center gap-3 px-4 text-left",
                   index < habits.length - 1 && "hairline",
                 )}
               >

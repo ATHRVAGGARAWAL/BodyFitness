@@ -37,7 +37,6 @@ export function Onboarding() {
       animate={{ opacity: 1 }}
       className="fixed inset-0 z-[100] mx-auto w-full max-w-[430px] overflow-hidden bg-black"
     >
-      <div className="absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_50%_0%,rgba(191,90,242,.25),transparent_68%)]" />
       <div className="relative flex min-h-[100dvh] flex-col px-5 pb-[calc(22px+var(--safe-bottom))] pt-[calc(18px+var(--safe-top))]">
         <div className="flex h-11 items-center justify-between">
           <button
@@ -95,7 +94,7 @@ export function Onboarding() {
         ) : (
           <button
             onClick={() => finishOnboarding(profileWithRecommendation)}
-            className="pressable mt-4 flex min-h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-[#30d158] text-[17px] font-bold text-black shadow-[0_12px_40px_rgba(48,209,88,.25)]"
+            className="pressable mt-4 flex min-h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-[#30d158] text-[17px] font-bold text-black"
           >
             <Check size={20} strokeWidth={3} />
             Enter BodyFitness
@@ -116,7 +115,7 @@ function WelcomeStep() {
             initial={{ pathLength: 0, rotate: -30 }}
             animate={{ pathLength: 1, rotate: 0 }}
             transition={{ delay: index * 0.12, type: "spring", stiffness: 180, damping: 18 }}
-            className="absolute rounded-full border-[10px] shadow-[0_0_28px_currentColor]"
+            className="absolute rounded-full border-[10px]"
             style={{ inset: index * 19, borderColor: color, color }}
           />
         ))}
@@ -389,7 +388,7 @@ function TargetCard({
 }) {
   return (
     <div className="ios-card min-h-[108px] p-4">
-      <div className="mb-4 h-2 w-2 rounded-full shadow-[0_0_12px_currentColor]" style={{ background: color, color }} />
+      <div className="mb-4 h-2 w-2 rounded-full" style={{ background: color }} />
       <p className="m-0 text-xs font-semibold text-white/42">{label}</p>
       <p className="number-font mb-0 mt-1 text-[27px] font-bold leading-none">
         {value} <span className="text-[11px] font-semibold tracking-normal text-white/35">{unit}</span>

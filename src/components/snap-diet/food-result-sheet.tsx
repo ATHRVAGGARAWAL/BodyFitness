@@ -44,7 +44,7 @@ export function FoodResultSheet({
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange} dismissible>
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 z-[91] bg-black/28" />
+        <Drawer.Overlay className="sheet-overlay fixed inset-0 z-[91]" />
         <Drawer.Content className="glass fixed bottom-0 left-1/2 z-[96] flex max-h-[88dvh] w-full max-w-[430px] -translate-x-1/2 flex-col rounded-t-[32px] outline-none">
           <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-white/25" />
           <div className="px-5 pb-3 pt-4">

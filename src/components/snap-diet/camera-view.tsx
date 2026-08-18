@@ -110,10 +110,10 @@ export function CameraView({
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[70] mx-auto max-w-[430px] overflow-hidden bg-black">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="camera-surface fixed inset-0 z-[70] mx-auto max-w-[430px] overflow-hidden bg-black">
       <video ref={videoRef} muted playsInline className="h-full w-full object-cover" />
       {!ready && !previewUrl && (
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,#303034,#09090b_62%)]" />
+        <div className="absolute inset-0 bg-[#101012]" />
       )}
       {/* Blob URLs are local camera frames and cannot be optimized by next/image. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}

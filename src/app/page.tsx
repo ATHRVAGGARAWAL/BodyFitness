@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, ChevronRight, Droplets, Flame, Footprints, Settings2, Utensils } from "lucide-react";
+import { Check, ChevronRight, Droplets, Flame, Footprints, UserRound, Utensils } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ActivityRings } from "@/components/dashboard/activity-rings";
@@ -56,8 +56,8 @@ export default function DashboardPage() {
         eyebrow={new Intl.DateTimeFormat("en-IN", { weekday: "long", month: "long", day: "numeric" }).format(new Date())}
         title="Summary"
         action={
-          <button aria-label="Open settings" onClick={() => setSettingsOpen(true)} className="icon-button pressable">
-            <Settings2 size={19} />
+          <button aria-label="Open profile" onClick={() => setSettingsOpen(true)} className="profile-button pressable">
+            <UserRound size={21} strokeWidth={2.25} />
           </button>
         }
       />
@@ -88,7 +88,7 @@ export default function DashboardPage() {
         <SectionHeader title="Daily essentials" caption="The few actions that keep your plan moving." />
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="health-card flex min-h-[168px] flex-col justify-between p-4">
+          <div className="health-card flex min-h-[176px] flex-col justify-between p-4">
             <div className="flex items-start justify-between">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#bf5af2]/14 text-[#bf5af2]">
                 <span className="number-font text-[12px] font-black">5g</span>
@@ -153,16 +153,18 @@ function IosToggle({ checked, onChange }: { checked: boolean; onChange: (checked
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className={cn("relative h-[31px] w-[51px] rounded-full p-0.5 transition-colors", checked ? "bg-[#30d158]" : "bg-[#39393d]")}
+      className="flex h-11 w-[55px] items-center justify-center"
     >
-      <motion.span
-        layout
-        animate={{ x: checked ? 20 : 0 }}
-        transition={{ type: "spring", stiffness: 620, damping: 38 }}
-        className="flex h-[27px] w-[27px] items-center justify-center rounded-full bg-white shadow-lg"
-      >
-        {checked && <Check size={14} className="text-[#30d158]" strokeWidth={3} />}
-      </motion.span>
+      <span className={cn("relative block h-[31px] w-[51px] rounded-full p-0.5 transition-colors", checked ? "bg-[#30d158]" : "toggle-off")}>
+        <motion.span
+          layout
+          animate={{ x: checked ? 20 : 0 }}
+          transition={{ type: "spring", stiffness: 620, damping: 38 }}
+          className="flex h-[27px] w-[27px] items-center justify-center rounded-full bg-white shadow-lg"
+        >
+          {checked && <Check size={14} className="text-[#30d158]" strokeWidth={3} />}
+        </motion.span>
+      </span>
     </button>
   );
 }

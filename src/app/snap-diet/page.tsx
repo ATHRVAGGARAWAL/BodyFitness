@@ -47,13 +47,13 @@ export default function SnapDietPage() {
     <main className="page-shell">
       <LargeTitle eyebrow="Vision nutrition" title="Snap Diet" />
 
-      <button onClick={() => setCameraOpen(true)} className="pressable relative block h-[330px] w-full overflow-hidden rounded-[30px] bg-[radial-gradient(circle_at_50%_35%,#39393e,#151517_62%,#09090b)] text-left shadow-2xl">
+      <button onClick={() => setCameraOpen(true)} className="always-dark pressable relative block h-[330px] w-full overflow-hidden rounded-[30px] bg-[#151517] text-left">
         <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(255,255,255,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.08)_1px,transparent_1px)] [background-size:44px_44px]" />
         <div className="absolute inset-8 rounded-[25px] border border-white/22">
           <ScanLine className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 text-white/18" />
-          <motion.div animate={{ y: [18, 205, 18] }} transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }} className="absolute left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#64d2ff] to-transparent shadow-[0_0_14px_#64d2ff]" />
+          <motion.div animate={{ y: [18, 205, 18] }} transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }} className="absolute left-4 right-4 h-px bg-[#64d2ff]/70" />
         </div>
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/75 to-transparent px-5 pb-5 pt-24">
+        <div className="absolute inset-x-3 bottom-3 rounded-[23px] bg-black/72 px-4 py-4 backdrop-blur-xl">
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="m-0 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-[#64d2ff]"><Sparkles size={13} /> OpenAI vision</p>

@@ -33,6 +33,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const hydrated = useBodyFitnessStore((state) => state.hydrated);
   const onboardingComplete = useBodyFitnessStore((state) => state.onboardingComplete);
+  const themePreference = useBodyFitnessStore((state) => state.themePreference);
   const [cameraActive, setCameraActive] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -46,6 +47,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       useBodyFitnessStore.getState().setHydrated(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const applyTheme = () => {
+      const resolved = themePreference === "system"
+        ? (media.matches ? "dark" : "light")
+        : themePreference;
+      document.documentElement.dataset.theme = resolved;
+      document.documentElement.style.colorScheme = resolved;
+      document.querySelector('meta[name="theme-color"]')?.setAttribute(
+        "content",
+        resolved === "dark" ? "#000000" : "#F2F2F7",
+      );
+    };
+
+    applyTheme();
+    media.addEventListener("change", applyTheme);
+    return () => media.removeEventListener("change", applyTheme);
+  }, [hydrated, themePreference]);
 
   const context = useMemo(
     () => ({ cameraActive, setCameraActive, showToast }),

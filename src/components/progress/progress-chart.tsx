@@ -15,17 +15,13 @@ export function ProgressChart({ data }: { data: ProgressPoint[] }) {
       </div>
       <ResponsiveContainer width="100%" height="84%">
         <AreaChart data={data} margin={{ top: 8, right: 4, left: -24, bottom: 0 }}>
-          <defs>
-            <linearGradient id="weightFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#64d2ff" stopOpacity={0.32} /><stop offset="1" stopColor="#64d2ff" stopOpacity={0} /></linearGradient>
-            <linearGradient id="strengthFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#bf5af2" stopOpacity={0.28} /><stop offset="1" stopColor="#bf5af2" stopOpacity={0} /></linearGradient>
-          </defs>
-          <CartesianGrid vertical={false} stroke="rgba(255,255,255,.055)" />
-          <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fill: "rgba(255,255,255,.28)", fontSize: 9 }} interval={2} />
-          <YAxis yAxisId="weight" domain={["dataMin - 1", "dataMax + 1"]} axisLine={false} tickLine={false} tick={{ fill: "rgba(255,255,255,.24)", fontSize: 9 }} />
+          <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
+          <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fill: "var(--chart-label)", fontSize: 9 }} interval={2} />
+          <YAxis yAxisId="weight" domain={["dataMin - 1", "dataMax + 1"]} axisLine={false} tickLine={false} tick={{ fill: "var(--chart-label)", fontSize: 9 }} />
           <YAxis yAxisId="strength" orientation="right" domain={["dataMin - 3", "dataMax + 3"]} hide />
-          <Tooltip content={<ChartTooltip />} cursor={{ stroke: "rgba(255,255,255,.18)", strokeDasharray: "3 3" }} />
-          <Area yAxisId="weight" type="monotone" dataKey="weight" stroke="#64d2ff" strokeWidth={2.4} fill="url(#weightFill)" activeDot={{ r: 4, fill: "#64d2ff", stroke: "#000", strokeWidth: 2 }} />
-          <Area yAxisId="strength" type="monotone" dataKey="e1rm" stroke="#bf5af2" strokeWidth={2.4} fill="url(#strengthFill)" activeDot={{ r: 4, fill: "#bf5af2", stroke: "#000", strokeWidth: 2 }} />
+          <Tooltip content={<ChartTooltip />} cursor={{ stroke: "var(--separator)", strokeDasharray: "3 3" }} />
+          <Area yAxisId="weight" type="monotone" dataKey="weight" stroke="#64d2ff" strokeWidth={2.4} fill="#64d2ff" fillOpacity={0.12} activeDot={{ r: 4, fill: "#64d2ff", stroke: "var(--surface)", strokeWidth: 2 }} />
+          <Area yAxisId="strength" type="monotone" dataKey="e1rm" stroke="#bf5af2" strokeWidth={2.4} fill="#bf5af2" fillOpacity={0.09} activeDot={{ r: 4, fill: "#bf5af2", stroke: "var(--surface)", strokeWidth: 2 }} />
         </AreaChart>
       </ResponsiveContainer>
     </div>

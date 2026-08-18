@@ -1,6 +1,7 @@
 export type BmrSex = "male" | "female";
 export type OccupationActivity = "seated" | "mixed" | "active" | "manual";
 export type ExerciseType = "compound" | "isolation";
+export type ThemePreference = "system" | "light" | "dark";
 
 export interface UserProfile {
   age: number;

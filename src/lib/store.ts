@@ -18,6 +18,7 @@ import type {
   PhysiqueWeek,
   RestTimerState,
   SetLog,
+  ThemePreference,
   UserProfile,
   WeightEntry,
   WorkoutDay,
@@ -40,6 +41,7 @@ const emptyDaily = (): DailyWellness => ({
 
 interface StoreData {
   hydrated: boolean;
+  themePreference: ThemePreference;
   onboardingComplete: boolean;
   profile: UserProfile;
   targets: NutritionTargets;
@@ -58,6 +60,7 @@ interface StoreData {
 
 interface StoreActions {
   setHydrated: (hydrated: boolean) => void;
+  setThemePreference: (themePreference: ThemePreference) => void;
   finishOnboarding: (profile: UserProfile) => void;
   updateProfile: (profile: UserProfile) => void;
   recalculateTargets: () => void;
@@ -96,6 +99,7 @@ export type BodyFitnessStore = StoreData & StoreActions;
 
 const initialData = (): StoreData => ({
   hydrated: false,
+  themePreference: "system",
   onboardingComplete: false,
   profile: { ...defaultProfile },
   targets: { ...defaultTargets },
@@ -134,6 +138,7 @@ export const useBodyFitnessStore = create<BodyFitnessStore>()(
     (set, get) => ({
       ...initialData(),
       setHydrated: (hydrated) => set({ hydrated }),
+      setThemePreference: (themePreference) => set({ themePreference }),
       finishOnboarding: (profile) =>
         set({
           profile,
@@ -281,7 +286,7 @@ export const useBodyFitnessStore = create<BodyFitnessStore>()(
     }),
     {
       name: "bodyfitness-store",
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => localStorage),
       migrate: (persistedState) => ({
         ...initialData(),
@@ -291,6 +296,8 @@ export const useBodyFitnessStore = create<BodyFitnessStore>()(
             compound: 120,
             isolation: 90,
           },
+        themePreference:
+          (persistedState as Partial<StoreData>).themePreference ?? "system",
       }),
       partialize: (state) => {
         const { hydrated, ...persisted } = state;

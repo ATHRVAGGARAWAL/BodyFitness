@@ -19,6 +19,11 @@ describe("BodyFitness store", () => {
     expect(useBodyFitnessStore.getState().meals[0]).toMatchObject({ name: "Dal rice", calories: 640 });
   });
 
+  it("persists the selected appearance", () => {
+    useBodyFitnessStore.getState().setThemePreference("light");
+    expect(useBodyFitnessStore.getState().themePreference).toBe("light");
+  });
+
   it("pauses and resumes a timestamp rest timer", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-18T10:00:00Z"));

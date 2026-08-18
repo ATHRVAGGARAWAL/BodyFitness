@@ -49,7 +49,7 @@ export function WorkoutEditorSheet({ open, onOpenChange, plan, onSave }: { open:
   return (
     <Drawer.Root open={open} onOpenChange={handleOpenChange} shouldScaleBackground={false}>
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 z-[90] bg-black/55 backdrop-blur-sm" />
+        <Drawer.Overlay className="sheet-overlay fixed inset-0 z-[90] backdrop-blur-sm" />
         <Drawer.Content className="glass fixed bottom-0 left-1/2 z-[95] flex max-h-[94dvh] w-full max-w-[430px] -translate-x-1/2 flex-col rounded-t-[32px] outline-none">
           <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-white/22" />
           <div className="flex items-center justify-between px-5 py-4">

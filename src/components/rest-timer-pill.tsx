@@ -55,7 +55,7 @@ export function RestTimerPill() {
           <motion.div
             layout
             onClick={() => setExpanded((value) => !value)}
-            className="flex min-h-11 cursor-pointer items-center overflow-hidden rounded-full bg-[#151517]/95 px-2 shadow-2xl ring-1 ring-white/10 backdrop-blur-2xl"
+            className="always-dark flex min-h-11 cursor-pointer items-center overflow-hidden rounded-full bg-[#151517]/95 px-2 shadow-2xl ring-1 ring-white/10 backdrop-blur-2xl"
           >
             <ProgressCircle progress={progress} remaining={remaining} />
             <div className="min-w-0 px-2">
