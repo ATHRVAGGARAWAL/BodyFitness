@@ -28,21 +28,21 @@ export function SettingsSheet({ open, onOpenChange }: { open: boolean; onOpenCha
     <Drawer.Root open={open} onOpenChange={handleOpenChange} shouldScaleBackground={false}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-[90] bg-black/55 backdrop-blur-sm" />
-        <Drawer.Content className="glass fixed bottom-0 left-1/2 z-[95] flex max-h-[92dvh] w-full max-w-[430px] -translate-x-1/2 flex-col rounded-t-[32px] outline-none">
+        <Drawer.Content className="glass-sheet fixed bottom-0 left-1/2 z-[95] flex max-h-[92dvh] w-full max-w-[430px] -translate-x-1/2 flex-col rounded-t-[32px] outline-none">
           <Drawer.Title className="sr-only">Settings</Drawer.Title>
           <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-white/22" />
           <div className="flex items-center justify-between px-5 pb-3 pt-4">
             <div>
-              <p className="m-0 text-[11px] font-bold uppercase tracking-[0.12em] text-white/35">BodyFitness</p>
+              <p className="section-kicker m-0">BodyFitness</p>
               <h2 className="m-0 mt-1 text-[28px] font-bold tracking-[-0.04em]">Settings</h2>
             </div>
-            <button onClick={() => onOpenChange(false)} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
+            <button onClick={() => onOpenChange(false)} className="icon-button pressable !h-9 !w-9">
               <X size={18} />
             </button>
           </div>
 
           <div className="scrollbar-none overflow-y-auto px-5 pb-[calc(28px+var(--safe-bottom))]">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.1em] text-white/34">Profile</p>
+            <p className="section-kicker mb-2">Profile</p>
             <div className="ios-card grid grid-cols-2 gap-3 p-4">
               <SettingNumber label="Current kg" value={draft.currentWeightKg} step={0.1} onChange={(currentWeightKg) => setDraft((value) => ({ ...value, currentWeightKg }))} />
               <SettingNumber label="Goal kg" value={draft.goalWeightKg} step={0.1} onChange={(goalWeightKg) => setDraft((value) => ({ ...value, goalWeightKg }))} />
@@ -63,7 +63,7 @@ export function SettingsSheet({ open, onOpenChange }: { open: boolean; onOpenCha
               <input type="range" min={5} max={20} value={draft.deficitPercent} onChange={(event) => setDraft((value) => ({ ...value, deficitPercent: Number(event.target.value) }))} className="w-full accent-[#30d158]" />
             </div>
 
-            <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-[0.1em] text-white/34">Rest timer</p>
+            <p className="section-kicker mb-2 mt-5">Rest timer</p>
             <div className="ios-card grid grid-cols-2 gap-3 p-4">
               <SettingNumber label="Compound seconds" value={restDraft.compound} step={15} onChange={(compound) => setRestDraft((value) => ({ ...value, compound }))} />
               <SettingNumber label="Isolation seconds" value={restDraft.isolation} step={15} onChange={(isolation) => setRestDraft((value) => ({ ...value, isolation }))} />

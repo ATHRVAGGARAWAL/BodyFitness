@@ -93,11 +93,12 @@ export function ExerciseCard({ exercise, dayId, index }: { exercise: Exercise; d
 
   return (
     <motion.article layout className="ios-card overflow-hidden">
+      <motion.span layout className="absolute inset-y-5 left-0 w-[2px] rounded-full bg-[#30d158] shadow-[0_0_10px_#30d158]" animate={{ opacity: expanded ? 1 : 0.34 }} />
       <button onClick={() => setExpanded((value) => !value)} className="flex min-h-[78px] w-full items-center gap-3 px-4 text-left">
-        <span className="number-font flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-white/[0.055] text-base font-bold text-white/45">{String(index + 1).padStart(2, "0")}</span>
+        <span className="number-font flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-white/[0.055] text-base font-bold text-white/42 ring-1 ring-white/[0.055]">{String(index + 1).padStart(2, "0")}</span>
         <div className="min-w-0 flex-1">
           <p className="m-0 truncate text-[15px] font-semibold">{exercise.name}</p>
-          <p className="mt-1 text-[10px] text-white/32">{exercise.sets} sets · {exercise.repMin}–{exercise.repMax} reps · {exercise.type}</p>
+          <p className="mt-1 text-[10px] capitalize text-white/32">{exercise.sets} sets · {exercise.repMin}–{exercise.repMax} reps · {exercise.type}</p>
         </div>
         <div className="text-right">
           <p className="number-font m-0 text-sm font-bold text-[#30d158]">{completedCount}/{exercise.sets}</p>
@@ -109,7 +110,7 @@ export function ExerciseCard({ exercise, dayId, index }: { exercise: Exercise; d
       <AnimatePresence initial={false}>
         {expanded && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-            <div className="border-t border-white/[0.065] px-3 pb-4 pt-3">
+            <div className="border-t border-white/[0.065] bg-black/10 px-3 pb-4 pt-3">
               <div className="mb-3 flex items-center justify-between px-1">
                 <div><p className="m-0 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/30">Previous best</p><p className="number-font mt-1 text-sm font-bold">{bestE1rm ? bestE1rm.toFixed(1) : "—"} <span className="text-[9px] tracking-normal text-white/30">kg e1RM</span></p></div>
                 <VoiceLogButton exerciseName={exercise.name} onParsed={fillFromVoice} />
@@ -123,7 +124,7 @@ export function ExerciseCard({ exercise, dayId, index }: { exercise: Exercise; d
                   <motion.div
                     key={setIndex}
                     animate={{ backgroundColor: set.isPr ? "rgba(48,209,88,.16)" : set.complete ? "rgba(255,255,255,.045)" : "rgba(255,255,255,.025)" }}
-                    className="grid min-h-[52px] grid-cols-[30px_1fr_1fr_46px] items-center gap-2 rounded-[15px] px-2"
+                    className="grid min-h-[54px] grid-cols-[30px_1fr_1fr_46px] items-center gap-2 rounded-[16px] px-2 ring-1 ring-white/[0.035]"
                   >
                     <span className="number-font text-center text-xs font-bold text-white/32">{setIndex + 1}</span>
                     <SetInput value={set.weightKg} step={0.5} disabled={set.complete} onChange={(weightKg) => updateSet(setIndex, { weightKg })} />
@@ -132,7 +133,7 @@ export function ExerciseCard({ exercise, dayId, index }: { exercise: Exercise; d
                       aria-label={`Complete set ${setIndex + 1}`}
                       disabled={set.complete}
                       onClick={() => completeSet(setIndex)}
-                      className={cn("flex h-9 w-9 items-center justify-center rounded-full", set.complete ? "bg-[#30d158] text-black" : "bg-white/10 text-white/65")}
+                      className={cn("pressable flex h-9 w-9 items-center justify-center rounded-full", set.complete ? "bg-[#30d158] text-black shadow-[0_0_18px_rgba(48,209,88,.25)]" : "bg-white/10 text-white/65")}
                     >
                       {set.isPr ? <Trophy size={15} /> : <Check size={16} strokeWidth={2.7} />}
                     </button>
@@ -148,5 +149,5 @@ export function ExerciseCard({ exercise, dayId, index }: { exercise: Exercise; d
 }
 
 function SetInput({ value, step = 1, disabled, onChange }: { value: number; step?: number; disabled: boolean; onChange: (value: number) => void }) {
-  return <input aria-label="Set value" className="number-font h-9 w-full rounded-[11px] border-0 bg-black/32 px-2 text-center text-sm font-semibold outline-none focus:ring-1 focus:ring-[#0a84ff] disabled:bg-transparent" type="number" inputMode="decimal" step={step} value={value} disabled={disabled} onChange={(event) => onChange(Number(event.target.value))} />;
+  return <input aria-label="Set value" className="number-font h-10 w-full rounded-[12px] border border-white/[0.045] bg-black/35 px-2 text-center text-sm font-semibold outline-none transition focus:border-[#64d2ff]/40 focus:ring-2 focus:ring-[#0a84ff]/35 disabled:border-transparent disabled:bg-transparent" type="number" inputMode="decimal" step={step} value={value} disabled={disabled} onChange={(event) => onChange(Number(event.target.value))} />;
 }

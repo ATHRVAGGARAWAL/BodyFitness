@@ -45,7 +45,7 @@ export function FoodResultSheet({
     <Drawer.Root open={open} onOpenChange={onOpenChange} dismissible>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-[91] bg-black/28" />
-        <Drawer.Content className="glass fixed bottom-0 left-1/2 z-[96] flex max-h-[88dvh] w-full max-w-[430px] -translate-x-1/2 flex-col rounded-t-[32px] outline-none">
+        <Drawer.Content className="glass-sheet fixed bottom-0 left-1/2 z-[96] flex max-h-[88dvh] w-full max-w-[430px] -translate-x-1/2 flex-col rounded-t-[32px] outline-none">
           <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-white/25" />
           <div className="px-5 pb-3 pt-4">
             <div className="mb-2 flex items-center gap-2 text-[#ffd60a]">
@@ -56,6 +56,10 @@ export function FoodResultSheet({
               <input value={name} onChange={(event) => setName(event.target.value)} className="w-full border-0 bg-transparent p-0 text-[27px] font-bold tracking-[-0.04em] outline-none" />
             </Drawer.Title>
             <p className="mt-1 text-xs text-white/38">Edit anything that looks off before adding it.</p>
+            <div className="mt-3 flex items-center gap-2">
+              <span className="rounded-full bg-[#30d158]/12 px-2.5 py-1 text-[9px] font-bold text-[#30d158] ring-1 ring-[#30d158]/10">{Math.round(analysis.confidence * 100)}% confidence</span>
+              <span className="text-[9px] text-white/25">Nutrition estimate</span>
+            </div>
           </div>
 
           <div className="scrollbar-none overflow-y-auto px-5 pb-[calc(24px+var(--safe-bottom))]">
@@ -111,7 +115,7 @@ export function FoodResultSheet({
 
 function Macro({ value, label, color }: { value: number; label: string; color: string }) {
   return (
-    <div className="rounded-[17px] bg-white/[0.055] px-2 py-3 text-center">
+    <div className="metric-tile px-2 py-3 text-center">
       <p className="number-font m-0 text-[19px] font-bold" style={{ color }}>{formatNumber(value)}</p>
       <p className="m-0 mt-1 text-[9px] font-semibold text-white/30">{label}</p>
     </div>

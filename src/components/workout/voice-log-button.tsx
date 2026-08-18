@@ -61,8 +61,9 @@ export function VoiceLogButton({ exerciseName, onParsed }: { exerciseName: strin
       aria-label={state === "recording" ? "Stop voice logging" : "Log set by voice"}
       onClick={state === "recording" ? stop : state === "idle" ? start : undefined}
       disabled={state === "processing"}
-      className="relative flex min-h-11 items-center gap-2 overflow-hidden rounded-full bg-white/[0.07] px-3 text-xs font-semibold disabled:opacity-70"
+      className="pressable relative flex min-h-11 items-center gap-2 overflow-hidden rounded-full border border-white/[0.08] bg-white/[0.06] px-2.5 pr-3 text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,.08)] disabled:opacity-70"
     >
+      <span className="absolute inset-0 bg-[linear-gradient(110deg,rgba(255,55,95,.08),rgba(191,90,242,.11),rgba(100,210,255,.08))]" />
       <AnimatePresence>
         {state === "recording" && (
           <motion.span
@@ -74,8 +75,10 @@ export function VoiceLogButton({ exerciseName, onParsed }: { exerciseName: strin
           />
         )}
       </AnimatePresence>
-      <span className="relative flex h-7 w-7 items-center justify-center rounded-full bg-black/65">
+      <span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-[conic-gradient(from_210deg,#ff375f,#bf5af2,#64d2ff,#30d158,#ff375f)] p-[1.5px] shadow-[0_0_16px_rgba(191,90,242,.28)]">
+        <span className="flex h-full w-full items-center justify-center rounded-full bg-[#111114]">
         {state === "recording" ? <Square size={11} fill="currentColor" /> : state === "processing" ? <WandSparkles size={15} /> : <Mic size={15} />}
+        </span>
       </span>
       <span className="relative">{state === "recording" ? "Listening…" : state === "processing" ? "Parsing…" : "Speak set"}</span>
     </button>

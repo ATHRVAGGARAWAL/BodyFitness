@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Camera, ImagePlus, RotateCcw, Sparkles, X, Zap, ZapOff } from "lucide-react";
+import { Camera, ImagePlus, RotateCcw, X, Zap, ZapOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAppChrome } from "@/components/app-shell";
 import type { FoodAnalysis } from "@/lib/types";
@@ -118,12 +118,12 @@ export function CameraView({
       {/* Blob URLs are local camera frames and cannot be optimized by next/image. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {previewUrl && <img src={previewUrl} alt="Captured meal" className="absolute inset-0 h-full w-full object-cover" />}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/75" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
 
       <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-[calc(var(--safe-top)+12px)]">
         <CircleButton label="Close camera" onClick={onClose}><X size={20} /></CircleButton>
-        <div className="glass flex items-center gap-2 rounded-full px-3 py-2 text-[11px] font-semibold">
-          <Sparkles size={14} className="text-[#ffd60a]" /> Indian mess AI
+        <div className="glass flex items-center gap-2 rounded-full px-3 py-2 text-[10px] font-semibold">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#30d158] shadow-[0_0_8px_#30d158]" /> Indian mess AI
         </div>
         <CircleButton label="Toggle flash" onClick={toggleTorch}>{torch ? <Zap size={19} fill="currentColor" /> : <ZapOff size={19} />}</CircleButton>
       </div>
@@ -133,20 +133,22 @@ export function CameraView({
         <span className="absolute -right-px -top-px h-8 w-8 rounded-tr-[30px] border-r-2 border-t-2 border-white" />
         <span className="absolute -bottom-px -left-px h-8 w-8 rounded-bl-[30px] border-b-2 border-l-2 border-white" />
         <span className="absolute -bottom-px -right-px h-8 w-8 rounded-br-[30px] border-b-2 border-r-2 border-white" />
+        {ready && !analyzing && <motion.span animate={{ y: [15, 285, 15] }} transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }} className="absolute left-5 right-5 h-px bg-gradient-to-r from-transparent via-[#64d2ff] to-transparent shadow-[0_0_16px_#64d2ff]" />}
       </div>
+      <div className="absolute left-1/2 top-[calc(66%+14px)] -translate-x-1/2 rounded-full bg-black/38 px-3 py-1.5 text-[9px] font-bold tracking-[0.12em] text-white/62 backdrop-blur-xl">AUTO · 1×</div>
       <p className="absolute inset-x-10 bottom-[185px] text-center text-xs font-medium leading-5 text-white/70">
         Keep the full plate in frame. We’ll account for hidden oil and standard mess portions.
       </p>
 
-      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-8 pb-[calc(30px+var(--safe-bottom))]">
+      <div className="absolute inset-x-4 bottom-[calc(14px+var(--safe-bottom))] flex items-center justify-between rounded-[32px] border border-white/[0.09] bg-black/28 px-5 py-4 backdrop-blur-2xl">
         <CircleButton label="Choose from photos" onClick={() => fileRef.current?.click()} large><ImagePlus size={22} /></CircleButton>
         <button
           aria-label="Take photo"
           disabled={analyzing}
           onClick={capture}
-          className="relative flex h-[82px] w-[82px] items-center justify-center rounded-full border-[5px] border-white bg-white/20 shadow-2xl backdrop-blur-md active:scale-95 disabled:opacity-60"
+          className="relative flex h-[78px] w-[78px] items-center justify-center rounded-full border-[5px] border-white bg-white/20 shadow-[0_10px_35px_rgba(0,0,0,.4)] backdrop-blur-md transition active:scale-95 disabled:opacity-60"
         >
-          <span className="h-[62px] w-[62px] rounded-full bg-white" />
+          <span className="h-[58px] w-[58px] rounded-full bg-white" />
         </button>
         <CircleButton label="Flip camera" onClick={() => setFacingMode((value) => value === "environment" ? "user" : "environment")} large><RotateCcw size={22} /></CircleButton>
       </div>
@@ -166,7 +168,7 @@ export function CameraView({
                 <Camera size={25} />
               </div>
             </div>
-            <p className="mt-5 text-[17px] font-semibold">Reading your plate…</p>
+            <p className="mt-5 text-[18px] font-semibold tracking-[-0.025em]">Reading your plate…</p>
             <p className="mt-1 text-xs text-white/45">Estimating portions and hidden oils</p>
           </motion.div>
         )}
@@ -177,7 +179,7 @@ export function CameraView({
 
 function CircleButton({ label, onClick, children, large = false }: { label: string; onClick: () => void; children: React.ReactNode; large?: boolean }) {
   return (
-    <button aria-label={label} onClick={onClick} className={`glass flex items-center justify-center rounded-full ${large ? "h-12 w-12" : "h-10 w-10"}`}>
+    <button aria-label={label} onClick={onClick} className={`glass pressable flex items-center justify-center rounded-full ${large ? "h-12 w-12" : "h-10 w-10"}`}>
       {children}
     </button>
   );

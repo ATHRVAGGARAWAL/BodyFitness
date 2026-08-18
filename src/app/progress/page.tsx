@@ -39,15 +39,15 @@ export default function ProgressPage() {
 
   return (
     <main className="page-shell">
-      <LargeTitle eyebrow="Recomposition" title="Progress" action={<button onClick={() => setWeightOpen(true)} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-white/70"><Plus size={19} /></button>} />
+      <LargeTitle eyebrow="Recomposition" title="Progress" action={<button onClick={() => setWeightOpen(true)} className="icon-button pressable" aria-label="Log body weight"><Plus size={19} /></button>} />
 
-      <div className="mb-3 flex items-center justify-between px-1">
-        <div><p className="m-0 text-[20px] font-bold tracking-[-0.03em]">Body vs strength</p><p className="mt-1 text-xs text-white/34">Weekly averages smooth out noise.</p></div>
+      <div className="mb-3 flex items-end justify-between px-1">
+        <div><p className="section-kicker m-0">12-week trend</p><p className="mb-0 mt-1 text-[21px] font-bold tracking-[-0.035em]">Body vs strength</p></div>
         {!weightEntries.length && <span className="rounded-full bg-white/[0.07] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-white/35">Sample</span>}
       </div>
 
       <div className="relative mb-3">
-        <select aria-label="Select strength lift" value={selectedLift?.id} onChange={(event) => setSelectedLiftId(event.target.value)} className="h-11 w-full appearance-none rounded-[15px] border-0 bg-white/[0.065] px-4 text-xs font-semibold outline-none">
+        <select aria-label="Select strength lift" value={selectedLift?.id} onChange={(event) => setSelectedLiftId(event.target.value)} className="capsule-control h-11 w-full appearance-none border-0 px-4 text-xs font-semibold text-white/72 outline-none focus:ring-2 focus:ring-[#bf5af2]/35">
           {compoundLifts.map((lift) => <option key={lift.id} value={lift.id}>{lift.name} estimated 1RM</option>)}
         </select>
         <ChevronDown size={15} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-white/35" />
@@ -60,16 +60,16 @@ export default function ProgressPage() {
       </div>
 
       {shouldRecalculate && (
-        <div className="mt-3 rounded-[20px] bg-[#ffd60a]/10 p-4">
+        <div className="mt-3 rounded-[22px] bg-[#ffd60a]/9 p-4 ring-1 ring-[#ffd60a]/12">
           <div className="flex gap-3"><Sparkles size={19} className="shrink-0 text-[#ffd60a]" /><div><p className="m-0 text-sm font-semibold">Your weight has shifted</p><p className="mt-1 text-[11px] leading-4 text-white/40">Recalculate nutrition targets using {latestWeight.toFixed(1)} kg? Nothing changes until you accept.</p></div></div>
           <button onClick={() => { finishOnboarding({ ...profile, currentWeightKg: latestWeight }); showToast("Targets recalculated"); }} className="mt-3 min-h-11 w-full rounded-[14px] bg-[#ffd60a] text-xs font-bold text-black">Use latest weight</button>
         </div>
       )}
 
-      <section className="mt-7">
+      <section className="mt-8">
         <div className="mb-3 flex items-end justify-between px-1">
-          <div><p className="m-0 text-[20px] font-bold tracking-[-0.03em]">Physique gallery</p><p className="mt-1 text-xs text-white/34">Same poses. Honest comparison.</p></div>
-          <button onClick={() => setPhysiqueOpen(true)} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.07]"><Camera size={17} /></button>
+          <div><p className="section-kicker m-0">Visual timeline</p><p className="mb-0 mt-1 text-[21px] font-bold tracking-[-0.035em]">Physique gallery</p></div>
+          <button onClick={() => setPhysiqueOpen(true)} className="icon-button pressable !h-10 !w-10" aria-label="Add physique photos"><Camera size={17} /></button>
         </div>
         <PhysiqueGallery entries={physiqueWeeks} onAdd={() => setPhysiqueOpen(true)} />
       </section>
@@ -81,7 +81,7 @@ export default function ProgressPage() {
 }
 
 function Stat({ icon, label, value, change, color }: { icon: React.ReactNode; label: string; value: string; change: string; color: string }) {
-  return <div className="ios-card p-4"><span className="flex h-9 w-9 items-center justify-center rounded-full" style={{ background: `${color}18`, color }}>{icon}</span><p className="mb-1 mt-4 text-[10px] font-semibold text-white/35">{label}</p><p className="number-font m-0 text-[22px] font-bold">{value}</p><p className="mt-1 text-[9px] font-semibold" style={{ color }}>{change}</p></div>;
+  return <div className="ios-card overflow-hidden p-4"><span aria-hidden className="absolute -right-10 -top-10 h-28 w-28 rounded-full blur-[42px]" style={{ background: `${color}24` }} /><span className="relative flex h-9 w-9 items-center justify-center rounded-[14px] ring-1 ring-white/[0.06]" style={{ background: `${color}18`, color }}>{icon}</span><p className="relative mb-1 mt-4 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/30">{label}</p><p className="number-font relative m-0 text-[23px] font-bold">{value}</p><p className="relative mt-1 text-[9px] font-semibold" style={{ color }}>{change}</p></div>;
 }
 
 function buildProgress(weightEntries: ReturnType<typeof useBodyFitnessStore.getState>["weightEntries"], setLogs: ReturnType<typeof useBodyFitnessStore.getState>["setLogs"], liftId: string | undefined, fallbackWeight: number): ProgressPoint[] {

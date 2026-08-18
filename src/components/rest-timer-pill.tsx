@@ -50,17 +50,17 @@ export function RestTimerPill() {
           animate={{ y: 0, opacity: 1, scale: 1 }}
           exit={{ y: -60, opacity: 0, scale: 0.88 }}
           transition={{ type: "spring", stiffness: 420, damping: 30 }}
-          className="rest-timer-active fixed left-1/2 top-[calc(var(--safe-top)+9px)] z-[80] -translate-x-1/2"
+          className="rest-timer-active fixed left-1/2 top-[calc(var(--safe-top)+8px)] z-[80] -translate-x-1/2"
         >
           <motion.div
             layout
             onClick={() => setExpanded((value) => !value)}
-            className="flex min-h-11 cursor-pointer items-center overflow-hidden rounded-full bg-[#151517]/95 px-2 shadow-2xl ring-1 ring-white/10 backdrop-blur-2xl"
+            className="flex min-h-[52px] cursor-pointer items-center overflow-hidden rounded-[21px] bg-[#09090a]/94 px-1.5 shadow-[0_18px_60px_rgba(0,0,0,.72)] ring-1 ring-white/[0.13] backdrop-blur-2xl"
           >
             <ProgressCircle progress={progress} remaining={remaining} />
-            <div className="min-w-0 px-2">
-              <p className="m-0 text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">Rest</p>
-              <p className="m-0 max-w-[150px] truncate text-xs font-semibold">{timer.exerciseName}</p>
+            <div className="min-w-0 px-2.5">
+              <p className="m-0 text-[8px] font-bold uppercase tracking-[0.15em] text-[#30d158]">Resting now</p>
+              <p className="m-0 max-w-[140px] truncate text-[11px] font-semibold">{timer.exerciseName}</p>
             </div>
             <AnimatePresence initial={false}>
               {expanded && (
@@ -96,7 +96,7 @@ export function RestTimerPill() {
 function ProgressCircle({ progress, remaining }: { progress: number; remaining: number }) {
   const circumference = Math.PI * 32;
   return (
-    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
+    <div className="relative flex h-11 w-11 shrink-0 items-center justify-center">
       <svg className="absolute inset-0 -rotate-90" viewBox="0 0 40 40">
         <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,.12)" strokeWidth="3" />
         <motion.circle
@@ -108,10 +108,11 @@ function ProgressCircle({ progress, remaining }: { progress: number; remaining: 
           strokeLinecap="round"
           strokeWidth="3"
           strokeDasharray={circumference}
+          initial={false}
           animate={{ strokeDashoffset: circumference * (1 - progress) }}
         />
       </svg>
-      <span className="number-font text-[11px] font-bold">{remaining}</span>
+      <span className="number-font text-[12px] font-bold">{remaining}</span>
     </div>
   );
 }
@@ -132,7 +133,7 @@ function TimerButton({
         event.stopPropagation();
         onClick();
       }}
-      className="flex h-8 min-w-8 items-center justify-center rounded-full bg-white/10 px-2 text-white/80"
+      className="pressable flex h-8 min-w-8 items-center justify-center rounded-full bg-white/[0.09] px-2 text-white/80 ring-1 ring-white/[0.055]"
     >
       {children}
     </button>

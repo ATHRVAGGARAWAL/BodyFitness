@@ -55,6 +55,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <ChromeContext.Provider value={context}>
       <div className={`app-frame ${hydrated && !onboardingComplete ? "h-[100dvh] overflow-hidden" : ""}`}>
+        <div aria-hidden className="ambient-layer">
+          <div className="ambient-orb ambient-orb--blue" />
+          <div className="ambient-orb ambient-orb--violet" />
+          <div className="ambient-orb ambient-orb--rose" />
+          <div className="ambient-grid" />
+        </div>
         {!hydrated ? (
           <LaunchScreen />
         ) : (
@@ -63,10 +69,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={pathname}
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -8 }}
-                transition={{ type: "spring", stiffness: 420, damping: 38 }}
+                initial={{ opacity: 0, y: 9, scale: 0.992, filter: "blur(5px)" }}
+                animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -5, scale: 0.996, filter: "blur(3px)" }}
+                transition={{ type: "spring", stiffness: 390, damping: 36, mass: 0.8 }}
               >
                 {children}
               </motion.div>
@@ -84,9 +90,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               initial={{ y: 18, opacity: 0, scale: 0.94 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 12, opacity: 0, scale: 0.96 }}
-              className="glass fixed left-1/2 z-[90] w-max max-w-[calc(100%-40px)] -translate-x-1/2 rounded-full px-4 py-2.5 text-sm font-semibold"
+              transition={{ type: "spring", stiffness: 480, damping: 31 }}
+              className="glass fixed left-1/2 z-[90] flex w-max max-w-[calc(100%-40px)] -translate-x-1/2 items-center gap-2.5 rounded-full px-4 py-2.5 text-[13px] font-semibold shadow-[0_18px_60px_rgba(0,0,0,.6)]"
               style={{ bottom: cameraActive ? 26 : "calc(94px + var(--safe-bottom))" }}
             >
+              <span className="h-2 w-2 shrink-0 rounded-full bg-[#30d158] shadow-[0_0_12px_#30d158]" />
               {toast}
             </motion.div>
           )}
@@ -98,20 +106,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
 function LaunchScreen() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-black">
+    <div className="relative z-10 flex min-h-[100dvh] flex-col items-center justify-center bg-black">
       <motion.div
         initial={{ scale: 0.86, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 24 }}
-        className="relative h-24 w-24"
+        className="relative h-28 w-28"
       >
         {["#ff375f", "#b6ff2e", "#64d2ff"].map((color, index) => (
           <div
             key={color}
-            className="absolute rounded-full border-[7px]"
-            style={{ inset: index * 12, borderColor: color }}
+            className="absolute rounded-full border-[8px] shadow-[0_0_24px_currentColor]"
+            style={{ inset: index * 14, borderColor: color, color }}
           />
         ))}
+      </motion.div>
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }} className="mt-7 text-center">
+        <p className="m-0 text-[21px] font-bold tracking-[-0.04em]">BodyFitness</p>
+        <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/28">Recompose intelligently</p>
       </motion.div>
     </div>
   );
