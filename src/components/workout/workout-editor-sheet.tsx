@@ -50,18 +50,18 @@ export function WorkoutEditorSheet({ open, onOpenChange, plan, onSave }: { open:
     <Drawer.Root open={open} onOpenChange={handleOpenChange} shouldScaleBackground={false}>
       <Drawer.Portal>
         <Drawer.Overlay className="sheet-overlay fixed inset-0 z-[90] backdrop-blur-sm" />
-        <Drawer.Content className="glass fixed bottom-0 left-1/2 z-[95] flex max-h-[94dvh] w-full max-w-[430px] -translate-x-1/2 flex-col rounded-t-[32px] outline-none">
-          <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-white/22" />
+        <Drawer.Content className="sheet-surface fixed bottom-0 left-1/2 z-[95] flex max-h-[94dvh] w-full max-w-[430px] -translate-x-1/2 flex-col rounded-t-[28px] outline-none">
+          <div className="sheet-handle mx-auto mt-3" />
           <div className="flex items-center justify-between px-5 py-4">
-            <div><p className="m-0 text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">PPLUL</p><Drawer.Title className="m-0 mt-1 text-[27px] font-bold tracking-[-0.04em]">Edit split</Drawer.Title></div>
-            <button onClick={() => onOpenChange(false)} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10"><X size={18} /></button>
+            <div><p className="eyebrow-label m-0">Protocol builder</p><Drawer.Title className="m-0 mt-1 text-[27px] font-black tracking-[-0.045em]">Edit training split</Drawer.Title></div>
+            <button onClick={() => onOpenChange(false)} className="icon-button pressable"><X size={18} /></button>
           </div>
           <div className="scrollbar-none overflow-y-auto px-5 pb-[calc(24px+var(--safe-bottom))]">
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={reorderDays}>
               <SortableContext items={draft.map((day) => day.id)} strategy={verticalListSortingStrategy}>
                 <div className="scrollbar-none flex gap-2 overflow-x-auto pb-2">
                   {draft.map((day) => <SortableDayChip key={day.id} day={day} selected={day.id === selectedDay?.id} onSelect={() => setSelectedDayId(day.id)} />)}
-                  <button onClick={() => { const id = uid("day"); setDraft((current) => [...current, { id, name: "New Day", accent: "#64d2ff", exercises: [] }]); setSelectedDayId(id); }} className="flex min-w-11 items-center justify-center rounded-full bg-white/10"><Plus size={17} /></button>
+                  <button onClick={() => { const id = uid("day"); setDraft((current) => [...current, { id, name: "New Day", accent: "#7c5cff", exercises: [] }]); setSelectedDayId(id); }} className="secondary-action flex min-w-11 items-center justify-center rounded-[13px]"><Plus size={17} /></button>
                 </div>
               </SortableContext>
             </DndContext>
@@ -70,7 +70,7 @@ export function WorkoutEditorSheet({ open, onOpenChange, plan, onSave }: { open:
               <>
                 <div className="mt-3 flex gap-2">
                   <input className="ios-field flex-1 text-sm font-semibold" value={selectedDay.name} onChange={(event) => updateDay({ name: event.target.value })} />
-                  {draft.length > 1 && <button aria-label="Delete day" onClick={() => { const remaining = draft.filter((day) => day.id !== selectedDay.id); setDraft(remaining); setSelectedDayId(remaining[0]?.id ?? ""); }} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-[#ff453a]/12 text-[#ff453a]"><Trash2 size={17} /></button>}
+                  {draft.length > 1 && <button aria-label="Delete day" onClick={() => { const remaining = draft.filter((day) => day.id !== selectedDay.id); setDraft(remaining); setSelectedDayId(remaining[0]?.id ?? ""); }} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-[color-mix(in_srgb,var(--danger)_12%,transparent)] text-[var(--danger)]"><Trash2 size={17} /></button>}
                 </div>
 
                 <p className="mb-2 mt-6 text-[11px] font-bold uppercase tracking-[0.1em] text-white/35">Exercises · drag to reorder</p>
@@ -83,10 +83,10 @@ export function WorkoutEditorSheet({ open, onOpenChange, plan, onSave }: { open:
                     </div>
                   </SortableContext>
                 </DndContext>
-                <button onClick={() => updateDay({ exercises: [...selectedDay.exercises, { id: uid("exercise"), name: "New Exercise", type: "isolation", sets: 3, repMin: 8, repMax: 12 }] })} className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-[16px] bg-white/[0.065] text-sm font-semibold"><Plus size={16} /> Add exercise</button>
+                <button onClick={() => updateDay({ exercises: [...selectedDay.exercises, { id: uid("exercise"), name: "New Exercise", type: "isolation", sets: 3, repMin: 8, repMax: 12 }] })} className="secondary-action pressable mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] text-sm font-bold"><Plus size={16} /> Add exercise</button>
               </>
             )}
-            <button onClick={() => { onSave(draft); onOpenChange(false); }} className="pressable mt-6 flex min-h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-white text-sm font-bold text-black"><Save size={17} /> Save split</button>
+            <button onClick={() => { onSave(draft); onOpenChange(false); }} className="primary-action pressable mt-6 flex min-h-14 w-full items-center justify-center gap-2 rounded-[15px] text-sm font-black"><Save size={17} /> Save protocol</button>
           </div>
         </Drawer.Content>
       </Drawer.Portal>
@@ -96,20 +96,20 @@ export function WorkoutEditorSheet({ open, onOpenChange, plan, onSave }: { open:
 
 function SortableDayChip({ day, selected, onSelect }: { day: WorkoutDay; selected: boolean; onSelect: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: day.id });
-  return <button ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} {...attributes} {...listeners} onClick={onSelect} className={cn("flex min-h-11 min-w-[88px] items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold", selected ? "bg-white text-black" : "bg-white/8 text-white/55")}><GripVertical size={13} />{day.name}</button>;
+  return <button ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} {...attributes} {...listeners} onClick={onSelect} className={cn("flex min-h-11 min-w-[88px] items-center justify-center gap-1.5 rounded-[13px] border px-3 text-xs font-bold", selected ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-strong)]" : "border-[var(--border)] bg-[var(--surface-soft)] text-white/55")}><GripVertical size={13} />{day.name}</button>;
 }
 
 function SortableExercise({ exercise, onChange, onDelete }: { exercise: Exercise; onChange: (patch: Partial<Exercise>) => void; onDelete: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: exercise.id });
   return (
-    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className="ios-card p-3">
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className="panel p-3">
       <div className="flex items-center gap-2">
         <button {...attributes} {...listeners} className="flex h-9 w-8 items-center justify-center text-white/30"><GripVertical size={17} /></button>
         <input className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm font-semibold outline-none" value={exercise.name} onChange={(event) => onChange({ name: event.target.value })} />
-        <button onClick={onDelete} className="flex h-9 w-9 items-center justify-center rounded-full text-[#ff453a]"><Trash2 size={15} /></button>
+        <button onClick={onDelete} className="flex h-9 w-9 items-center justify-center rounded-[11px] text-[var(--danger)]"><Trash2 size={15} /></button>
       </div>
       <div className="mt-2 flex items-stretch gap-2">
-        <button onClick={() => onChange({ type: exercise.type === "compound" ? "isolation" : "compound" })} className={cn("min-w-[84px] rounded-[11px] px-2 py-2 text-[9px] font-bold", exercise.type === "compound" ? "bg-[#ff9f0a]/15 text-[#ff9f0a]" : "bg-[#64d2ff]/12 text-[#64d2ff]")}>{exercise.type}</button>
+        <button onClick={() => onChange({ type: exercise.type === "compound" ? "isolation" : "compound" })} className={cn("min-w-[84px] rounded-[11px] px-2 py-2 text-[9px] font-bold", exercise.type === "compound" ? "bg-[color-mix(in_srgb,var(--warning)_14%,transparent)] text-[var(--warning)]" : "bg-[color-mix(in_srgb,var(--steps)_12%,transparent)] text-[var(--steps)]")}>{exercise.type}</button>
         <div className="grid min-w-0 flex-1 grid-cols-4 gap-1.5">
           <EditorNumber label="sets" value={exercise.sets} onChange={(sets) => onChange({ sets })} />
           <EditorNumber label="min" value={exercise.repMin} onChange={(repMin) => onChange({ repMin })} />
@@ -122,5 +122,5 @@ function SortableExercise({ exercise, onChange, onDelete }: { exercise: Exercise
 }
 
 function EditorNumber({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
-  return <label className="rounded-[11px] bg-white/[0.055] px-2 py-1"><span className="block text-center text-[8px] text-white/28">{label}</span><input className="number-font w-full border-0 bg-transparent p-0 text-center text-xs font-semibold outline-none" type="number" value={value} onChange={(event) => onChange(Number(event.target.value))} /></label>;
+  return <label className="rounded-[11px] border border-[var(--border)] bg-[var(--surface-soft)] px-2 py-1"><span className="block text-center text-[8px] text-white/28">{label}</span><input className="number-font w-full border-0 bg-transparent p-0 text-center text-xs font-semibold outline-none" type="number" value={value} onChange={(event) => onChange(Number(event.target.value))} /></label>;
 }

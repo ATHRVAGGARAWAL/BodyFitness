@@ -286,19 +286,22 @@ export const useBodyFitnessStore = create<BodyFitnessStore>()(
     }),
     {
       name: "bodyfitness-store",
-      version: 3,
+      version: 4,
       storage: createJSONStorage(() => localStorage),
-      migrate: (persistedState) => ({
-        ...initialData(),
-        ...(persistedState as Partial<StoreData>),
-        restDefaults:
-          (persistedState as Partial<StoreData>).restDefaults ?? {
-            compound: 120,
-            isolation: 90,
-          },
-        themePreference:
-          (persistedState as Partial<StoreData>).themePreference ?? "system",
-      }),
+      migrate: (persistedState) => {
+        const persisted = persistedState as Partial<StoreData>;
+        const newAccents = new Map(defaultWorkoutPlan.map((day) => [day.id, day.accent]));
+        return {
+          ...initialData(),
+          ...persisted,
+          workoutPlan: (persisted.workoutPlan ?? defaultWorkoutPlan).map((day) => ({
+            ...day,
+            accent: newAccents.get(day.id) ?? day.accent ?? "#7c5cff",
+          })),
+          restDefaults: persisted.restDefaults ?? { compound: 120, isolation: 90 },
+          themePreference: persisted.themePreference ?? "system",
+        };
+      },
       partialize: (state) => {
         const { hydrated, ...persisted } = state;
         void hydrated;

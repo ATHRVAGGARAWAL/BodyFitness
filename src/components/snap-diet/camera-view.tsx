@@ -118,21 +118,22 @@ export function CameraView({
       {/* Blob URLs are local camera frames and cannot be optimized by next/image. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {previewUrl && <img src={previewUrl} alt="Captured meal" className="absolute inset-0 h-full w-full object-cover" />}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/75" />
+      <div className="absolute inset-x-0 top-0 h-32 bg-black/55" />
+      <div className="absolute inset-x-0 bottom-0 h-64 bg-black/70" />
 
       <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-[calc(var(--safe-top)+12px)]">
         <CircleButton label="Close camera" onClick={onClose}><X size={20} /></CircleButton>
-        <div className="glass flex items-center gap-2 rounded-full px-3 py-2 text-[11px] font-semibold">
-          <Sparkles size={14} className="text-[#ffd60a]" /> Indian mess AI
+        <div className="glass flex items-center gap-2 rounded-[13px] px-3 py-2 text-[10px] font-bold">
+          <Sparkles size={14} className="text-[var(--accent-strong)]" /> VISION READY
         </div>
         <CircleButton label="Toggle flash" onClick={toggleTorch}>{torch ? <Zap size={19} fill="currentColor" /> : <ZapOff size={19} />}</CircleButton>
       </div>
 
-      <div className="pointer-events-none absolute left-6 right-6 top-[18%] h-[48%] rounded-[30px] border border-white/35 shadow-[inset_0_0_0_1px_rgba(0,0,0,.18)]">
-        <span className="absolute -left-px -top-px h-8 w-8 rounded-tl-[30px] border-l-2 border-t-2 border-white" />
-        <span className="absolute -right-px -top-px h-8 w-8 rounded-tr-[30px] border-r-2 border-t-2 border-white" />
-        <span className="absolute -bottom-px -left-px h-8 w-8 rounded-bl-[30px] border-b-2 border-l-2 border-white" />
-        <span className="absolute -bottom-px -right-px h-8 w-8 rounded-br-[30px] border-b-2 border-r-2 border-white" />
+      <div className="pointer-events-none absolute left-6 right-6 top-[18%] h-[48%] rounded-[24px] border border-white/20 shadow-[inset_0_0_0_1px_rgba(0,0,0,.18)]">
+        <span className="absolute -left-px -top-px h-9 w-9 rounded-tl-[24px] border-l-2 border-t-2 border-[#9178ff]" />
+        <span className="absolute -right-px -top-px h-9 w-9 rounded-tr-[24px] border-r-2 border-t-2 border-[#9178ff]" />
+        <span className="absolute -bottom-px -left-px h-9 w-9 rounded-bl-[24px] border-b-2 border-l-2 border-[#9178ff]" />
+        <span className="absolute -bottom-px -right-px h-9 w-9 rounded-br-[24px] border-b-2 border-r-2 border-[#9178ff]" />
       </div>
       <p className="absolute inset-x-10 bottom-[185px] text-center text-xs font-medium leading-5 text-white/70">
         Keep the full plate in frame. We’ll account for hidden oil and standard mess portions.
@@ -144,9 +145,9 @@ export function CameraView({
           aria-label="Take photo"
           disabled={analyzing}
           onClick={capture}
-          className="relative flex h-[82px] w-[82px] items-center justify-center rounded-full border-[5px] border-white bg-white/20 shadow-2xl backdrop-blur-md active:scale-95 disabled:opacity-60"
+          className="relative flex h-[82px] w-[82px] items-center justify-center rounded-[27px] border-2 border-white bg-white/16 shadow-2xl backdrop-blur-md active:scale-95 disabled:opacity-60"
         >
-          <span className="h-[62px] w-[62px] rounded-full bg-white" />
+          <span className="h-[62px] w-[62px] rounded-[21px] bg-white" />
         </button>
         <CircleButton label="Flip camera" onClick={() => setFacingMode((value) => value === "environment" ? "user" : "environment")} large><RotateCcw size={22} /></CircleButton>
       </div>
@@ -161,8 +162,8 @@ export function CameraView({
         {analyzing && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 flex flex-col items-center justify-center bg-black/38 backdrop-blur-md">
             <div className="relative h-24 w-24">
-              <div className="absolute inset-0 rounded-full bg-[conic-gradient(#ff375f,#ffd60a,#30d158,#64d2ff,#bf5af2,#ff375f)] blur-lg opacity-80" style={{ animation: "siri-orbit 1.25s linear infinite" }} />
-              <div className="absolute inset-2 flex items-center justify-center rounded-full bg-black/85">
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }} className="absolute inset-0 rounded-[29px] border-2 border-[#7c5cff] border-r-transparent opacity-90" />
+              <div className="absolute inset-2 flex items-center justify-center rounded-[23px] bg-black/85">
                 <Camera size={25} />
               </div>
             </div>
@@ -177,7 +178,7 @@ export function CameraView({
 
 function CircleButton({ label, onClick, children, large = false }: { label: string; onClick: () => void; children: React.ReactNode; large?: boolean }) {
   return (
-    <button aria-label={label} onClick={onClick} className={`glass flex items-center justify-center rounded-full ${large ? "h-12 w-12" : "h-10 w-10"}`}>
+    <button aria-label={label} onClick={onClick} className={`glass flex items-center justify-center rounded-[14px] ${large ? "h-12 w-12" : "h-10 w-10"}`}>
       {children}
     </button>
   );

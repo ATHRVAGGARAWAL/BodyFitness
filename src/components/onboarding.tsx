@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Moon, Sparkles } from "lucide-react";
+import { Activity, ArrowLeft, ArrowRight, Check, Dumbbell, Moon, ScanLine } from "lucide-react";
 import { useMemo, useState } from "react";
 import { calculateTargets, recommendedActivityMultiplier } from "@/lib/calculations";
 import { defaultProfile } from "@/lib/seed";
@@ -35,7 +35,7 @@ export function Onboarding() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-[100] mx-auto w-full max-w-[430px] overflow-hidden bg-black"
+      className="fixed inset-0 z-[100] mx-auto w-full max-w-[430px] overflow-hidden bg-[var(--background)]"
     >
       <div className="relative flex min-h-[100dvh] flex-col px-5 pb-[calc(22px+var(--safe-bottom))] pt-[calc(18px+var(--safe-top))]">
         <div className="flex h-11 items-center justify-between">
@@ -43,7 +43,7 @@ export function Onboarding() {
             aria-label="Back"
             onClick={back}
             className={cn(
-              "flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition-opacity",
+              "icon-button pressable transition-opacity",
               step === 0 && "pointer-events-none opacity-0",
             )}
           >
@@ -54,7 +54,7 @@ export function Onboarding() {
               <motion.span
                 key={label}
                 animate={{ width: index === step ? 22 : 6, opacity: index <= step ? 1 : 0.25 }}
-                className="h-1.5 rounded-full bg-white"
+                className="h-1.5 rounded-[3px] bg-[var(--accent)]"
               />
             ))}
           </div>
@@ -86,7 +86,7 @@ export function Onboarding() {
         {step < 3 ? (
           <button
             onClick={next}
-            className="pressable mt-4 flex min-h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-white text-[17px] font-bold text-black"
+            className="primary-action pressable mt-4 flex min-h-14 w-full items-center justify-center gap-2 rounded-[15px] text-[16px] font-black"
           >
             {step === 0 ? "Set up my plan" : "Continue"}
             <ArrowRight size={19} strokeWidth={2.6} />
@@ -94,7 +94,7 @@ export function Onboarding() {
         ) : (
           <button
             onClick={() => finishOnboarding(profileWithRecommendation)}
-            className="pressable mt-4 flex min-h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-[#30d158] text-[17px] font-bold text-black"
+            className="primary-action pressable mt-4 flex min-h-14 w-full items-center justify-center gap-2 rounded-[15px] text-[16px] font-black"
           >
             <Check size={20} strokeWidth={3} />
             Enter BodyFitness
@@ -108,26 +108,19 @@ export function Onboarding() {
 function WelcomeStep() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center pb-8 text-center">
-      <div className="relative mb-9 h-36 w-36">
-        {["#ff375f", "#b6ff2e", "#64d2ff"].map((color, index) => (
-          <motion.div
-            key={color}
-            initial={{ pathLength: 0, rotate: -30 }}
-            animate={{ pathLength: 1, rotate: 0 }}
-            transition={{ delay: index * 0.12, type: "spring", stiffness: 180, damping: 18 }}
-            className="absolute rounded-full border-[10px]"
-            style={{ inset: index * 19, borderColor: color, color }}
-          />
-        ))}
-        <Sparkles className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-white" />
-      </div>
-      <p className="mb-2 text-sm font-bold uppercase tracking-[0.18em] text-[#bf5af2]">Private by design</p>
-      <h1 className="m-0 text-[38px] font-bold leading-[0.98] tracking-[-0.05em]">
-        Your body,
-        <br />in motion.
+      <motion.div initial={{ opacity: 0, y: 14, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 250, damping: 22 }} className="panel relative mb-9 grid h-36 w-36 grid-cols-2 gap-2.5 rounded-[30px] p-4">
+        <span className="flex items-center justify-center rounded-[14px] bg-[var(--accent)] text-white"><Activity size={25} /></span>
+        <span className="flex items-center justify-center rounded-[14px] bg-[color-mix(in_srgb,var(--protein)_16%,var(--surface-soft))] text-[var(--protein)]"><Dumbbell size={24} /></span>
+        <span className="flex items-center justify-center rounded-[14px] bg-[color-mix(in_srgb,var(--steps)_15%,var(--surface-soft))] text-[var(--steps)]"><ScanLine size={24} /></span>
+        <span className="flex items-center justify-center rounded-[14px] border border-[var(--border)] bg-[var(--surface-soft)] font-mono text-[13px] font-black">BF</span>
+      </motion.div>
+      <p className="page-kicker mb-3">Private performance system</p>
+      <h1 className="m-0 text-[40px] font-black leading-[0.94] tracking-[-0.065em]">
+        Build the signal.
+        <br />Cut the noise.
       </h1>
-      <p className="mt-5 max-w-[310px] text-[16px] leading-6 text-white/55">
-        A local-first recomp coach for nutrition, training and weekly progress. Your history stays on this device.
+      <p className="mt-5 max-w-[316px] text-[15px] leading-6 text-white/50">
+        One focused workspace for nutrition, training and body recomposition. Your history stays on this device.
       </p>
     </div>
   );
@@ -222,7 +215,7 @@ function LifestyleStep({
         <NumberField label="Session length" value={profile.sessionMinutes} suffix="minutes" step={5} onChange={(sessionMinutes) => setProfile((v) => ({ ...v, sessionMinutes }))} />
         <NumberField label="Sleep" value={profile.sleepHours} suffix="hours" step={0.5} onChange={(sleepHours) => setProfile((v) => ({ ...v, sleepHours }))} />
       </div>
-      <div className="flex gap-3 rounded-[18px] bg-[#0a84ff]/12 p-4 text-[#64d2ff]">
+      <div className="flex gap-3 rounded-[16px] border border-[var(--border)] bg-[var(--surface-soft)] p-4 text-[var(--steps)]">
         <Moon className="mt-0.5 h-5 w-5 shrink-0" />
         <p className="m-0 text-[13px] leading-5 text-white/58">
           Sleep shapes recovery coaching, but we do not invent a calorie penalty for a short night.
@@ -248,22 +241,22 @@ function TargetStep({
       description="A mild deficit with high protein. You can change this anytime."
     >
       <div className="grid grid-cols-2 gap-3">
-        <TargetCard label="Calories" value={formatNumber(targets.calories)} unit="kcal" color="#ff375f" />
-        <TargetCard label="Protein" value={formatNumber(targets.proteinG)} unit="grams" color="#b6ff2e" />
-        <TargetCard label="Water" value={(targets.waterMl / 1_000).toFixed(1)} unit="litres" color="#64d2ff" />
-        <TargetCard label="Steps" value={`${Math.round(targets.steps / 1_000)}k`} unit="daily" color="#bf5af2" />
+        <TargetCard label="Calories" value={formatNumber(targets.calories)} unit="kcal" color="var(--energy)" />
+        <TargetCard label="Protein" value={formatNumber(targets.proteinG)} unit="grams" color="var(--protein)" />
+        <TargetCard label="Water" value={(targets.waterMl / 1_000).toFixed(1)} unit="litres" color="var(--steps)" />
+        <TargetCard label="Steps" value={`${Math.round(targets.steps / 1_000)}k`} unit="daily" color="var(--accent-strong)" />
       </div>
-      <div className="ios-card p-4">
+      <div className="panel p-4">
         <div className="flex items-center justify-between">
           <div>
             <p className="m-0 text-sm font-semibold">Daily deficit</p>
             <p className="mt-1 text-xs text-white/40">Based on {formatNumber(targets.tdee)} kcal TDEE</p>
           </div>
-          <span className="number-font text-2xl font-bold text-[#30d158]">{profile.deficitPercent}%</span>
+          <span className="number-font text-2xl font-black text-[var(--protein)]">{profile.deficitPercent}%</span>
         </div>
         <input
           aria-label="Daily calorie deficit"
-          className="mt-4 w-full accent-[#30d158]"
+          className="mt-4 w-full accent-[var(--accent)]"
           type="range"
           min={5}
           max={20}
@@ -298,8 +291,8 @@ function StepContainer({
 }) {
   return (
     <div className="scrollbar-none flex-1 overflow-y-auto pb-3 pt-5">
-      <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-[#64d2ff]">{eyebrow}</p>
-      <h2 className="m-0 text-[31px] font-bold leading-[1.02] tracking-[-0.045em]">{title}</h2>
+      <p className="page-kicker mb-2">{eyebrow}</p>
+      <h2 className="m-0 text-[31px] font-black leading-[1.02] tracking-[-0.055em]">{title}</h2>
       <p className="mb-6 mt-3 text-[15px] leading-5 text-white/48">{description}</p>
       <div className="space-y-4">{children}</div>
     </div>
@@ -355,7 +348,7 @@ function Segmented({
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="relative grid grid-cols-2 rounded-[13px] bg-white/10 p-1">
+    <div className="segmented-control relative grid grid-cols-2 p-1">
       {options.map(([option, label]) => (
         <button
           key={option}
@@ -365,7 +358,7 @@ function Segmented({
           {value === option && (
             <motion.span
               layoutId="onboarding-segment"
-              className="absolute inset-0 rounded-[10px] bg-white/15 shadow-sm"
+              className="segmented-selected absolute inset-0 rounded-[11px]"
             />
           )}
           <span className="relative">{label}</span>
@@ -387,8 +380,8 @@ function TargetCard({
   color: string;
 }) {
   return (
-    <div className="ios-card min-h-[108px] p-4">
-      <div className="mb-4 h-2 w-2 rounded-full" style={{ background: color }} />
+    <div className="panel min-h-[108px] p-4">
+      <div className="mb-4 h-2 w-5 rounded-[3px]" style={{ background: color }} />
       <p className="m-0 text-xs font-semibold text-white/42">{label}</p>
       <p className="number-font mb-0 mt-1 text-[27px] font-bold leading-none">
         {value} <span className="text-[11px] font-semibold tracking-normal text-white/35">{unit}</span>

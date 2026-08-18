@@ -1,43 +1,42 @@
 # BodyFitness design contract
 
-This document is the visual source of truth for BodyFitness. New UI should follow these rules before adding one-off styling.
+BodyFitness is a mobile fitness operating system: focused, high-signal, technical, and fast. The interface borrows interaction craft from 21st.dev and React Bits—not the visual language of a platform vendor.
 
-## Reference guidance
+## Product language
 
-- [Apple Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/)
-- [Layout](https://developer.apple.com/design/human-interface-guidelines/layout)
-- [Typography](https://developer.apple.com/design/human-interface-guidelines/typography)
-- [Color](https://developer.apple.com/design/human-interface-guidelines/color)
-- [Materials](https://developer.apple.com/design/human-interface-guidelines/materials)
-- [Motion](https://developer.apple.com/design/human-interface-guidelines/motion)
-- [Tab bars](https://developer.apple.com/design/human-interface-guidelines/tab-bars)
-- Apple Fitness and Apple Health App Store screenshots are visual references only. Their artwork and screenshots are not bundled in this project.
+- Graphite canvas with solid, layered panels and fine neutral borders.
+- Electric violet (`#7c5cff`) is the product accent.
+- Rose communicates energy, acid green communicates protein and positive output, cyan communicates water and movement, amber communicates caution.
+- Geometry is rounded but structured: 13–22px radii for controls and panels. Circles are reserved for inherently circular data or physical camera affordances.
+- A subtle dot field gives the canvas depth. Decorative fog, ambient blobs, and ornamental gradients are prohibited.
+- Typography is dense and editorial: large compressed page titles, monospaced kickers/indexes, tabular data, clear supporting copy.
 
-## Product direction
+## Interaction rules
 
-BodyFitness is 80% Apple Health and 20% Apple Fitness: calm information hierarchy with bright, semantic fitness data.
+1. Every target is at least 44px and has visible pressed feedback.
+2. Motion explains selection, hierarchy, progress, or spatial continuity. Spring motion must remain interruptible and reduced-motion safe.
+3. The limelight dock is the only persistent glass surface. Sheets and transient notices may also use blur; ordinary content panels remain solid.
+4. Data color is semantic, never decorative. One element should rarely use more than one accent color.
+5. Use progressive disclosure for exercise sets, AI assumptions, settings, and editing tools.
+6. Dark, light, and system themes must remain functional. Camera capture always uses a dark photographic control surface.
+7. Top-level pages follow the same hierarchy: system kicker, product title, primary module, numbered sections, then supporting actions.
+8. Sample data must be visibly labeled and disappear as real data becomes available.
 
-## Non-negotiable rules
+## Mobile layout
 
-1. Both appearances use Apple semantic colors rather than inversion hacks. Dark uses `#000000` with `#1C1C1E` surfaces; light uses grouped `#F2F2F7` with white surfaces. Camera mode always remains dark.
-2. Glass is reserved for navigation, sheets, transient controls, and overlays. Never use glass for ordinary content cards.
-3. No decorative gradients, colored fog, ambient orbs, or arbitrary glow effects. Data fills may use transparent solid color, and the water level may animate as liquid.
-4. Color has one meaning per context: red for calories/activity, lime for protein, cyan for steps/water, green for completion/PR, yellow for caution, and purple for intelligence.
-5. Put the most important information first. Use progressive disclosure for details and settings.
-6. Use the system font stack. Default body text is at least 17px where practical; supporting labels never go below 11px unless they are nonessential annotations.
-7. Every interactive target is at least 44px. Controls must look different from content.
-8. Use 16px screen margins, 12px card gaps, 20–24px card radii, and 0.5px separators.
-9. Motion must communicate state or spatial continuity, remain interruptible, and respect reduced-motion preferences. Avoid animation on frequently repeated interactions unless it provides feedback.
-10. The tab bar remains visible across top-level views, always shows all four labels, uses the edge-aligned iOS tab-bar structure, and is hidden only for temporary full-screen camera or modal experiences.
-11. The profile avatar is the top-right entry to personal data, appearance, targets, rest settings, and local-data controls. Light, dark, and system appearance choices must persist.
+- The product has no desktop layout. It renders inside a centered 430px canvas.
+- Screen inset: 16px. Panel gap: 12px. Bottom content clearance: 108px plus the safe area.
+- The four-item dock remains visible on top-level pages and hides for the full-screen camera.
+- Test at 390×844 and 430×932 with safe areas, both themes, and reduced motion.
 
-## Dashboard hierarchy
+## Component vocabulary
 
-1. Large title and date
-2. Activity rings and current values
-3. One contextual next action
-4. Daily essentials and mess habits
-5. Nutrition highlight
-6. Today’s meal log
+- `panel`: solid primary content surface.
+- `data-tile`: compact nested metric surface.
+- `icon-tile`: square semantic icon container.
+- `status-chip`: compact uppercase system state.
+- `primary-action`: violet high-emphasis action.
+- `secondary-action`: neutral bordered action.
+- `sheet-surface`: elevated modal workspace.
 
-Before changing the rest of the product, new visual patterns must first prove themselves on the Dashboard and pass mobile visual review.
+New UI must extend these primitives before introducing one-off visual treatments.

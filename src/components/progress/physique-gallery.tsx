@@ -11,8 +11,8 @@ export function PhysiqueGallery({ entries, onAdd }: { entries: PhysiqueWeek[]; o
   return (
     <div className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-[28px] pb-4">
       {visible.map((entry, index) => <PhysiqueCard key={entry.id} entry={entry} demo={!entries.length} index={index} />)}
-      <button onClick={onAdd} className="ios-card flex min-h-[330px] w-[310px] shrink-0 snap-center flex-col items-center justify-center text-white/44">
-        <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/[0.07]"><Plus size={25} /></span>
+      <button onClick={onAdd} className="panel flex min-h-[330px] w-[310px] shrink-0 snap-center flex-col items-center justify-center text-white/44">
+        <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-[17px] border border-[var(--border)] bg-[var(--accent-soft)] text-[var(--accent-strong)]"><Plus size={25} /></span>
         <p className="m-0 text-sm font-semibold text-white/70">Add this week</p>
         <p className="mt-1 text-[10px]">Front · side · back</p>
       </button>
@@ -22,8 +22,8 @@ export function PhysiqueGallery({ entries, onAdd }: { entries: PhysiqueWeek[]; o
 
 function PhysiqueCard({ entry, demo, index }: { entry: PhysiqueWeek; demo: boolean; index: number }) {
   return (
-    <article className="ios-card w-[310px] shrink-0 snap-center overflow-hidden">
-      <div className="grid h-[255px] grid-cols-3 gap-px bg-white/5">
+    <article className="panel w-[310px] shrink-0 snap-center overflow-hidden">
+      <div className="grid h-[255px] grid-cols-3 gap-px bg-[var(--border)]">
         <PhotoPanel photoId={entry.frontPhotoId} label="Front" demo={demo} shade={index} />
         <PhotoPanel photoId={entry.sidePhotoId} label="Side" demo={demo} shade={index + 1} />
         <PhotoPanel photoId={entry.backPhotoId} label="Back" demo={demo} shade={index + 2} />
@@ -57,7 +57,7 @@ function PhotoPanel({ photoId, label, demo, shade }: { photoId?: string; label: 
           <div className="absolute left-1/2 top-[40%] h-28 w-16 -translate-x-1/2 rounded-[45%_45%_28%_28%] bg-white/[0.075] blur-[1px]" />
         </div>
       )}
-      <span className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/45 px-2 py-1 text-[9px] font-semibold backdrop-blur-lg">{label}</span>
+      <span className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-[7px] border border-white/10 bg-black/55 px-2 py-1 text-[8px] font-black uppercase tracking-[0.06em] backdrop-blur-lg">{label}</span>
       {demo && <Camera className="absolute right-2 top-2 h-3.5 w-3.5 text-white/24" />}
     </div>
   );

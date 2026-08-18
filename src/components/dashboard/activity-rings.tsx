@@ -1,10 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Flame, Footprints, Utensils } from "lucide-react";
+import { Flame, Footprints, Gauge, Utensils } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 
-interface RingDatum {
+interface MetricDatum {
   label: string;
   value: number;
   target: number;
@@ -30,123 +30,102 @@ export function ActivityRings({
   stepTarget: number;
   onEditSteps?: () => void;
 }) {
-  const rings: RingDatum[] = [
+  const metrics: MetricDatum[] = [
     {
       label: "Calories",
       value: calories,
       target: calorieTarget,
-      color: "var(--ring-calories)",
+      color: "var(--energy)",
       unit: "kcal",
-      icon: <Flame size={13} fill="currentColor" />,
+      icon: <Flame size={14} />,
     },
     {
       label: "Protein",
       value: protein,
       target: proteinTarget,
-      color: "var(--ring-protein)",
+      color: "var(--protein)",
       unit: "g",
-      icon: <Utensils size={13} />,
+      icon: <Utensils size={14} />,
     },
     {
       label: "Steps",
       value: steps,
       target: stepTarget,
-      color: "var(--ring-steps)",
+      color: "var(--steps)",
       unit: "",
-      icon: <Footprints size={13} />,
+      icon: <Footprints size={14} />,
     },
   ];
   const caloriePercent = Math.round((calories / Math.max(1, calorieTarget)) * 100);
 
   return (
-    <section className="health-card overflow-hidden p-4">
+    <section className="panel overflow-hidden p-5">
       <div className="flex items-center justify-between">
         <div>
-          <p className="m-0 text-[15px] font-semibold">Today</p>
-          <p className="mt-0.5 text-[11px] text-white/35">Move, fuel and recover</p>
+          <p className="m-0 font-mono text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent-strong)]">Daily output</p>
+          <p className="mt-1 text-[12px] font-semibold text-white/42">Fuel, recovery and movement</p>
         </div>
         {onEditSteps && (
-          <button
-            onClick={onEditSteps}
-            className="pressable min-h-11 rounded-full bg-white/[0.07] px-3.5 text-[11px] font-semibold text-white/60"
-          >
+          <button onClick={onEditSteps} className="ghost-action pressable rounded-[13px] px-3 text-[10px] font-bold">
             Edit steps
           </button>
         )}
       </div>
 
-      <div className="relative mx-auto mt-1 aspect-square w-[228px] max-w-full">
-        <svg viewBox="0 0 224 224" className="h-full w-full -rotate-90 overflow-visible">
-          {rings.map((ring, index) => {
-            const radius = 91 - index * 25;
-            const circumference = 2 * Math.PI * radius;
-            const progress = Math.min(ring.value / Math.max(1, ring.target), 1);
-            return (
-              <g key={ring.label}>
-                <circle
-                  cx="112"
-                  cy="112"
-                  r={radius}
-                  fill="none"
-                  stroke="var(--ring-track)"
-                  strokeWidth="17"
-                />
-                <motion.circle
-                  cx="112"
-                  cy="112"
-                  r={radius}
-                  fill="none"
-                  stroke={ring.color}
-                  strokeWidth="17"
-                  strokeLinecap="round"
-                  strokeDasharray={circumference}
-                  initial={{ strokeDashoffset: circumference }}
-                  animate={{ strokeDashoffset: circumference * (1 - progress) }}
-                  transition={{ delay: index * 0.08, type: "spring", stiffness: 75, damping: 18 }}
-                />
-                {ring.value > ring.target && (
-                  <circle
-                    cx="112"
-                    cy="112"
-                    r={radius}
-                    fill="none"
-                    stroke="var(--label)"
-                    opacity="0.66"
-                    strokeDasharray="2 12"
-                    strokeLinecap="round"
-                    strokeWidth="3"
-                  />
-                )}
-              </g>
-            );
-          })}
-        </svg>
-
-        <div className="absolute left-1/2 top-1/2 w-[116px] -translate-x-1/2 -translate-y-1/2 text-center">
-          <p className="number-font m-0 text-[29px] font-bold leading-none">{caloriePercent}%</p>
-          <p className="mt-1.5 whitespace-nowrap text-[10px] font-semibold text-white/35">calorie goal</p>
+      <div className="mt-6 flex items-end justify-between gap-4">
+        <div>
+          <span className="sr-only">{caloriePercent}%</span>
+          <div aria-hidden="true" className="flex items-start gap-1">
+            <span className="number-font text-[58px] font-black leading-[0.8] tracking-[-0.09em]">{caloriePercent}</span>
+            <span className="number-font mt-1 text-[18px] font-black text-[var(--accent-strong)]">%</span>
+          </div>
+          <p className="mb-0 mt-3 text-[11px] font-semibold text-white/42">of today’s calorie target</p>
+        </div>
+        <div className="flex h-[72px] w-[72px] shrink-0 flex-col items-center justify-center rounded-[20px] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] bg-[var(--accent-soft)] text-[var(--accent-strong)]">
+          <Gauge size={20} />
+          <span className="mt-1 font-mono text-[8px] font-black uppercase tracking-[0.13em]">On pace</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 border-t border-white/[0.065] pt-3">
-        {rings.map((ring, index) => (
-          <div
-            key={ring.label}
-            className={`min-w-0 px-2 text-center ${index > 0 ? "border-l border-white/[0.065]" : ""}`}
-          >
-            <span className="mb-1.5 flex items-center justify-center gap-1 text-[10px] font-semibold text-white/40">
-              <span style={{ color: ring.color }}>{ring.icon}</span>
-              {ring.label}
-            </span>
-            <span className="number-font block truncate text-[18px] font-bold leading-none" style={{ color: ring.color }}>
-              {formatNumber(ring.value)}
-              {ring.unit && <span className="ml-0.5 text-[9px] tracking-normal opacity-70">{ring.unit}</span>}
-            </span>
-            <span className="number-font mt-1 block text-[9px] text-white/28">
-              of {formatNumber(ring.target)}{ring.unit}
-            </span>
-          </div>
-        ))}
+      <div className="mt-6 metric-track h-[7px]">
+        <motion.div
+          className="metric-fill bg-[var(--energy)]"
+          initial={{ width: 0 }}
+          animate={{ width: `${Math.min(caloriePercent, 100)}%` }}
+          transition={{ type: "spring", stiffness: 90, damping: 19 }}
+        />
+      </div>
+      <div className="mt-2 flex items-center justify-between font-mono text-[9px] font-bold text-white/34">
+        <span>{formatNumber(calories)} kcal</span>
+        <span>{formatNumber(calorieTarget)} target</span>
+      </div>
+
+      <div className="mt-5 grid grid-cols-3 gap-2">
+        {metrics.map((metric, index) => {
+          const progress = Math.min(metric.value / Math.max(1, metric.target), 1);
+          return (
+            <div key={metric.label} className="rounded-[16px] border border-white/[0.065] bg-white/[0.035] p-3">
+              <span className="flex items-center gap-1.5 text-[9px] font-bold text-white/38">
+                <span style={{ color: metric.color }}>{metric.icon}</span>
+                {metric.label}
+              </span>
+              <p className="number-font mb-0 mt-3 truncate text-[18px] font-black leading-none" style={{ color: metric.color }}>
+                {formatNumber(metric.value)}
+                {metric.unit && <span className="ml-0.5 text-[8px] tracking-normal opacity-65">{metric.unit}</span>}
+              </p>
+              <div className="metric-track mt-3 h-[3px]">
+                <motion.div
+                  className="metric-fill"
+                  style={{ background: metric.color }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress * 100}%` }}
+                  transition={{ delay: 0.08 * index, type: "spring", stiffness: 100, damping: 20 }}
+                />
+              </div>
+              <p className="number-font mb-0 mt-2 text-[8px] text-white/28">/{formatNumber(metric.target)}{metric.unit}</p>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

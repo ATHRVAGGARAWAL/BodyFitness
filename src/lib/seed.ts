@@ -48,7 +48,7 @@ export const defaultWorkoutPlan: WorkoutDay[] = [
   {
     id: "push",
     name: "Push",
-    accent: "#ff375f",
+    accent: "#ff668a",
     exercises: [
       exercise("bench-press", "Barbell Bench Press", "compound", 4, 5, 8),
       exercise("incline-db", "Incline Dumbbell Press", "compound", 3, 8, 12),
@@ -60,7 +60,7 @@ export const defaultWorkoutPlan: WorkoutDay[] = [
   {
     id: "pull",
     name: "Pull",
-    accent: "#0a84ff",
+    accent: "#65d9ff",
     exercises: [
       exercise("lat-pulldown", "Lat Pulldown", "compound", 4, 6, 10),
       exercise("barbell-row", "Barbell Row", "compound", 3, 6, 10),
@@ -72,7 +72,7 @@ export const defaultWorkoutPlan: WorkoutDay[] = [
   {
     id: "legs",
     name: "Legs",
-    accent: "#ffd60a",
+    accent: "#ffbd59",
     exercises: [
       exercise("back-squat", "Back Squat", "compound", 4, 5, 8),
       exercise("romanian-deadlift", "Romanian Deadlift", "compound", 3, 6, 10),
@@ -84,7 +84,7 @@ export const defaultWorkoutPlan: WorkoutDay[] = [
   {
     id: "upper",
     name: "Upper",
-    accent: "#bf5af2",
+    accent: "#7c5cff",
     exercises: [
       exercise("incline-bench", "Incline Bench Press", "compound", 3, 6, 10),
       exercise("pull-up", "Pull-up", "compound", 3, 6, 10),
@@ -97,7 +97,7 @@ export const defaultWorkoutPlan: WorkoutDay[] = [
   {
     id: "lower",
     name: "Lower",
-    accent: "#30d158",
+    accent: "#b7f36b",
     exercises: [
       exercise("front-squat", "Front Squat", "compound", 3, 5, 8),
       exercise("hip-thrust", "Hip Thrust", "compound", 3, 8, 12),

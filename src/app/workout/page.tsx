@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CalendarDays, ChevronRight, Flame, Pencil, TimerReset, Trophy } from "lucide-react";
+import { Activity, BarChart3, CalendarDays, ChevronRight, Pencil, TimerReset, Trophy } from "lucide-react";
 import { useState } from "react";
 import { LargeTitle } from "@/components/large-title";
 import { ExerciseCard } from "@/components/workout/exercise-card";
@@ -17,70 +17,83 @@ export default function WorkoutPage() {
   const [editorOpen, setEditorOpen] = useState(false);
   const { showToast } = useAppChrome();
   const selectedDay = plan.find((day) => day.id === selectedDayId) ?? plan[0];
+  const prCount = setLogs.filter((log) => log.isPr).length;
 
   return (
     <main className="page-shell">
       <LargeTitle
-        eyebrow="Five-day PPLUL"
-        title="Workout"
-        action={<button onClick={() => setEditorOpen(true)} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-white/70" aria-label="Edit workout split"><Pencil size={18} /></button>}
+        eyebrow="Adaptive training system"
+        title="Training Lab"
+        action={<button onClick={() => setEditorOpen(true)} className="profile-button pressable" aria-label="Edit workout split"><Pencil size={19} /></button>}
       />
 
-      <div className="ios-card mb-5 overflow-hidden p-4">
-        <div className="flex items-center justify-between">
+      <section className="panel overflow-hidden p-4">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="m-0 flex items-center gap-1.5 text-[11px] font-semibold text-white/38"><CalendarDays size={13} /> This week</p>
-            <p className="number-font mb-0 mt-2 text-[30px] font-bold leading-none">3 <span className="text-sm tracking-normal text-white/30">of 5 days</span></p>
+            <div className="page-kicker"><CalendarDays size={12} /> Weekly protocol</div>
+            <p className="number-font mb-0 mt-3 text-[34px] font-black leading-none">03<span className="ml-1 text-[15px] font-bold tracking-normal text-white/30">/05</span></p>
+            <p className="mt-2 text-[11px] text-white/36">Sessions completed this cycle</p>
           </div>
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-[#ff375f]/12 text-[#ff375f]">
-            <Flame size={27} fill="currentColor" />
-            <span className="absolute -right-1 -top-1 rounded-full bg-[#ff9f0a] px-1.5 py-0.5 text-[9px] font-black text-black">6</span>
+          <div className="data-tile flex min-w-[112px] flex-col items-end p-3">
+            <span className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[var(--success)]"><Activity size={12} /> On pace</span>
+            <p className="number-font mb-0 mt-3 text-[25px] font-black">68<span className="ml-1 text-[10px] tracking-normal text-white/32">min</span></p>
+            <p className="mt-1 text-[9px] text-white/28">avg session</p>
           </div>
         </div>
-        <div className="mt-4 flex gap-1.5">
-          {plan.map((day, index) => <span key={day.id} className={`h-1.5 flex-1 rounded-full ${index < 3 ? "bg-[#ff375f]" : "bg-white/10"}`} />)}
+        <div className="mt-5 grid grid-cols-5 gap-1.5">
+          {plan.map((day, index) => (
+            <div key={day.id} className="space-y-1.5 text-center">
+              <span className={`block h-1.5 rounded-full ${index < 3 ? "bg-[var(--accent)]" : "bg-[var(--fill)]"}`} />
+              <span className="text-[8px] font-black uppercase tracking-[0.04em] text-white/25">{day.name.slice(0, 3)}</span>
+            </div>
+          ))}
         </div>
-      </div>
+      </section>
 
-      <div className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-2">
-        {plan.map((day) => (
-          <button key={day.id} onClick={() => setSelectedDayId(day.id)} className={`relative min-h-12 min-w-[92px] overflow-hidden rounded-full px-4 text-sm font-semibold ${day.id === selectedDay?.id ? "text-black" : "bg-white/[0.065] text-white/48"}`}>
-            {day.id === selectedDay?.id && <motion.span layoutId="workout-day" className="absolute inset-0" style={{ background: day.accent }} transition={{ type: "spring", stiffness: 420, damping: 34 }} />}
-            <span className="relative">{day.name}</span>
-          </button>
-        ))}
+      <div className="scrollbar-none -mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-2">
+        {plan.map((day, index) => {
+          const active = day.id === selectedDay?.id;
+          return (
+            <button key={day.id} onClick={() => setSelectedDayId(day.id)} className={`pressable relative min-h-[62px] min-w-[104px] overflow-hidden rounded-[17px] border px-3 text-left ${active ? "border-[color-mix(in_srgb,var(--accent)_48%,transparent)] text-white" : "border-[var(--border)] bg-[var(--surface)] text-white/42"}`}>
+              {active && <motion.span layoutId="workout-day" className="absolute inset-0 bg-[var(--accent-soft)]" transition={{ type: "spring", stiffness: 420, damping: 34 }} />}
+              <span className="relative block font-mono text-[8px] font-black tracking-[0.08em] text-white/30">0{index + 1}</span>
+              <span className="relative mt-1 block text-[13px] font-bold">{day.name}</span>
+            </button>
+          );
+        })}
       </div>
 
       {selectedDay && (
-        <section className="mt-5">
-          <div className="mb-3 flex items-end justify-between px-1">
-            <div><p className="m-0 text-[22px] font-bold tracking-[-0.035em]">{selectedDay.name} session</p><p className="mt-1 text-xs text-white/34">{selectedDay.exercises.length} exercises · tap a card to log</p></div>
-            <span className="number-font text-xs font-bold" style={{ color: selectedDay.accent }}>~68 min</span>
-          </div>
+        <section className="mt-7">
+          <SectionHeader index="01" title={`${selectedDay.name} protocol`} caption={`${selectedDay.exercises.length} movements · tap a module to log`} />
           <div className="space-y-3">
             {selectedDay.exercises.map((exercise, index) => <ExerciseCard key={exercise.id} exercise={exercise} dayId={selectedDay.id} index={index} />)}
           </div>
         </section>
       )}
 
-      <section className="mt-7">
-        <div className="mb-3 px-1"><p className="m-0 text-[20px] font-bold tracking-[-0.03em]">Training intelligence</p><p className="mt-1 text-xs text-white/34">Quiet signals, not noisy dashboards.</p></div>
+      <section className="mt-8">
+        <SectionHeader index="02" title="Training signals" caption="Useful feedback without dashboard noise." />
         <div className="grid grid-cols-2 gap-3">
-          <Insight icon={<Trophy size={18} />} label="PR sets" value={String(setLogs.filter((log) => log.isPr).length || 4)} color="#30d158" />
-          <Insight icon={<TimerReset size={18} />} label="Rest quality" value="92%" color="#64d2ff" />
+          <Insight icon={<Trophy size={18} />} label="PR output" value={String(prCount || 4)} note="sets" color="var(--success)" />
+          <Insight icon={<TimerReset size={18} />} label="Rest control" value="92" note="score" color="var(--steps)" />
         </div>
-        <button className="pressable mt-3 flex min-h-14 w-full items-center gap-3 rounded-[20px] bg-white/[0.055] px-4 text-left">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#bf5af2]/13 text-[#bf5af2]"><Flame size={17} /></span>
-          <div className="flex-1"><p className="m-0 text-sm font-semibold">Progressive overload is on</p><p className="mt-0.5 text-[10px] text-white/30">Green sets beat your previous e1RM by 1%+</p></div>
+        <button className="panel pressable mt-3 flex min-h-[72px] w-full items-center gap-3 px-4 text-left">
+          <span className="icon-tile text-[var(--accent-strong)]"><BarChart3 size={18} /></span>
+          <div className="flex-1"><p className="m-0 text-sm font-bold">Overload detection active</p><p className="mt-1 text-[10px] text-white/32">A PR requires a 1%+ e1RM improvement.</p></div>
           <ChevronRight size={16} className="text-white/18" />
         </button>
       </section>
 
-      <WorkoutEditorSheet key={editorOpen ? "editor-open" : "editor-closed"} open={editorOpen} onOpenChange={setEditorOpen} plan={plan} onSave={(next) => { setWorkoutPlan(next); showToast("Workout split updated"); }} />
+      <WorkoutEditorSheet key={editorOpen ? "editor-open" : "editor-closed"} open={editorOpen} onOpenChange={setEditorOpen} plan={plan} onSave={(next) => { setWorkoutPlan(next); showToast("Training protocol updated"); }} />
     </main>
   );
 }
 
-function Insight({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: string }) {
-  return <div className="ios-card p-4"><span className="flex h-9 w-9 items-center justify-center rounded-full" style={{ background: `${color}18`, color }}>{icon}</span><p className="mt-5 mb-1 text-[11px] font-semibold text-white/35">{label}</p><p className="number-font m-0 text-[27px] font-bold" style={{ color }}>{value}</p></div>;
+function SectionHeader({ index, title, caption }: { index: string; title: string; caption: string }) {
+  return <div className="mb-3 px-1"><div className="mb-1 flex items-center gap-2"><span className="section-index">{index}</span><span className="section-rule" /></div><h2 className="section-title">{title}</h2><p className="section-caption">{caption}</p></div>;
+}
+
+function Insight({ icon, label, value, note, color }: { icon: React.ReactNode; label: string; value: string; note: string; color: string }) {
+  return <div className="panel p-4"><span className="icon-tile" style={{ color }}>{icon}</span><p className="mb-1 mt-5 text-[10px] font-bold uppercase tracking-[0.07em] text-white/30">{label}</p><p className="number-font m-0 text-[28px] font-black" style={{ color }}>{value}<span className="ml-1 text-[9px] font-bold tracking-normal text-white/28">{note}</span></p></div>;
 }

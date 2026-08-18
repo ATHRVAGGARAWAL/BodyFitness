@@ -54,7 +54,7 @@ export default function DashboardPage() {
     <main className="page-shell">
       <LargeTitle
         eyebrow={new Intl.DateTimeFormat("en-IN", { weekday: "long", month: "long", day: "numeric" }).format(new Date())}
-        title="Summary"
+        title="Command Center"
         action={
           <button aria-label="Open profile" onClick={() => setSettingsOpen(true)} className="profile-button pressable">
             <UserRound size={21} strokeWidth={2.25} />
@@ -63,8 +63,8 @@ export default function DashboardPage() {
       />
 
       <div className="mb-3 flex items-center justify-between px-1">
-        <p className="m-0 text-[13px] font-semibold text-white/50">Activity</p>
-        {usingDemo && <span className="rounded-full bg-white/[0.07] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-white/35">Sample data</span>}
+        <p className="m-0 font-mono text-[9px] font-black uppercase tracking-[0.15em] text-white/38">Live overview</p>
+        {usingDemo && <span className="rounded-[8px] border border-white/[0.07] bg-white/[0.045] px-2 py-1 font-mono text-[8px] font-black uppercase tracking-[0.1em] text-white/35">Demo feed</span>}
       </div>
       <ActivityRings
         calories={totals.calories}
@@ -85,18 +85,18 @@ export default function DashboardPage() {
       />
 
       <section className="mt-8">
-        <SectionHeader title="Daily essentials" caption="The few actions that keep your plan moving." />
+        <SectionHeader index="01" title="Daily protocol" caption="The repeatable actions that compound over time." />
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="health-card flex min-h-[176px] flex-col justify-between p-4">
+          <div className="panel flex min-h-[176px] flex-col justify-between p-4">
             <div className="flex items-start justify-between">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#bf5af2]/14 text-[#bf5af2]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[13px] bg-[var(--accent-soft)] text-[var(--accent-strong)]">
                 <span className="number-font text-[12px] font-black">5g</span>
               </div>
               <IosToggle checked={daily?.creatineTaken ?? false} onChange={setCreatine} />
             </div>
             <div>
-              <p className="m-0 text-[17px] font-bold">Creatine</p>
+              <p className="m-0 text-[17px] font-extrabold tracking-[-0.03em]">Creatine</p>
               <p className="mt-1 text-[11px] text-white/38">{daily?.creatineTaken ? "Logged today" : "Maintain saturation"}</p>
             </div>
           </div>
@@ -109,22 +109,23 @@ export default function DashboardPage() {
       </section>
 
       <section className="mt-8">
-        <SectionHeader title="Nutrition highlight" caption="Your recent pattern, without overreacting to one day." />
+        <SectionHeader index="02" title="Trend intelligence" caption="Signal over noise from your recent nutrition pattern." />
         <AdaptiveCard insight={insight} target={targets.calories} demo={usingDemo} isFlexDay={flexDays.includes(today)} onToggleFlexDay={() => toggleFlexDay(today)} />
       </section>
 
       <section className="mt-8">
         <div className="mb-3 flex items-center justify-between px-1">
           <div>
-            <h2 className="section-title">Today’s food</h2>
-            <p className="section-caption">Meals added to your activity rings.</p>
+            <div className="mb-1 flex items-center gap-2"><span className="section-index">03</span><span className="h-px w-5 bg-[var(--accent)]" /></div>
+            <h2 className="section-title">Fuel log</h2>
+            <p className="section-caption">Meals contributing to today’s output.</p>
           </div>
           <span className="number-font text-xs font-semibold text-white/35">{formatNumber(totals.proteinG)}g protein</span>
         </div>
-        <div className="health-card overflow-hidden">
+        <div className="panel overflow-hidden">
           {visibleMeals.filter((meal) => localDateKey(meal.loggedAt) === today).slice(0, 3).map((meal, index, array) => (
             <motion.div key={meal.id} className={cn("flex min-h-[64px] items-center gap-3 px-4", index < array.length - 1 && "hairline")}>
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ff375f]/12 text-[#ff375f]">
+              <span className="flex h-10 w-10 items-center justify-center rounded-[13px] bg-[color-mix(in_srgb,var(--energy)_13%,transparent)] text-[var(--energy)]">
                 <Flame size={17} />
               </span>
               <div className="min-w-0 flex-1">
@@ -155,23 +156,24 @@ function IosToggle({ checked, onChange }: { checked: boolean; onChange: (checked
       onClick={() => onChange(!checked)}
       className="flex h-11 w-[55px] items-center justify-center"
     >
-      <span className={cn("relative block h-[31px] w-[51px] rounded-full p-0.5 transition-colors", checked ? "bg-[#30d158]" : "toggle-off")}>
+      <span className={cn("relative block h-[31px] w-[51px] rounded-[11px] p-0.5 transition-colors", checked ? "bg-[var(--success)]" : "toggle-off")}>
         <motion.span
           layout
           animate={{ x: checked ? 20 : 0 }}
           transition={{ type: "spring", stiffness: 620, damping: 38 }}
-          className="flex h-[27px] w-[27px] items-center justify-center rounded-full bg-white shadow-lg"
+          className="flex h-[27px] w-[27px] items-center justify-center rounded-[9px] bg-white shadow-lg"
         >
-          {checked && <Check size={14} className="text-[#30d158]" strokeWidth={3} />}
+          {checked && <Check size={14} className="text-[var(--success)]" strokeWidth={3} />}
         </motion.span>
       </span>
     </button>
   );
 }
 
-function SectionHeader({ title, caption }: { title: string; caption: string }) {
+function SectionHeader({ index, title, caption }: { index: string; title: string; caption: string }) {
   return (
     <div className="mb-3 px-1">
+      <div className="mb-1 flex items-center gap-2"><span className="section-index">{index}</span><span className="h-px w-5 bg-[var(--accent)]" /></div>
       <h2 className="section-title">{title}</h2>
       <p className="section-caption">{caption}</p>
     </div>
@@ -193,34 +195,34 @@ function NextAction({
 }) {
   if (proteinRemaining > 0) {
     return (
-      <div className="health-card mt-3 flex min-h-[78px] items-center gap-3 px-4 py-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#b6ff2e]/12 text-[#b6ff2e]"><Utensils size={19} /></span>
+      <div className="panel mt-3 flex min-h-[82px] items-center gap-3 px-4 py-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-[color-mix(in_srgb,var(--protein)_12%,transparent)] text-[var(--protein)]"><Utensils size={19} /></span>
         <div className="min-w-0 flex-1"><p className="m-0 text-sm font-semibold">Prioritize protein next</p><p className="mt-1 text-[11px] text-white/38">{formatNumber(proteinRemaining)}g remaining today</p></div>
-        <Link href="/snap-diet" className="pressable flex min-h-11 items-center rounded-full bg-white px-3.5 text-[11px] font-bold text-black">Log food</Link>
+        <Link href="/snap-diet" className="primary-action pressable flex min-h-11 items-center rounded-[13px] px-3.5 text-[10px] font-black">Log food</Link>
       </div>
     );
   }
   if (waterRemaining > 0) {
     return (
-      <div className="health-card mt-3 flex min-h-[78px] items-center gap-3 px-4 py-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#64d2ff]/12 text-[#64d2ff]"><Droplets size={19} /></span>
+      <div className="panel mt-3 flex min-h-[82px] items-center gap-3 px-4 py-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-[color-mix(in_srgb,var(--steps)_12%,transparent)] text-[var(--steps)]"><Droplets size={19} /></span>
         <div className="min-w-0 flex-1"><p className="m-0 text-sm font-semibold">Hydration is next</p><p className="mt-1 text-[11px] text-white/38">{(waterRemaining / 1_000).toFixed(1)}L remaining today</p></div>
-        <button onClick={onAddWater} className="pressable min-h-11 rounded-full bg-white px-3.5 text-[11px] font-bold text-black">+250 ml</button>
+        <button onClick={onAddWater} className="primary-action pressable min-h-11 rounded-[13px] px-3.5 text-[10px] font-black">+250 ml</button>
       </div>
     );
   }
   if (stepsRemaining > 0) {
     return (
-      <div className="health-card mt-3 flex min-h-[78px] items-center gap-3 px-4 py-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#64d2ff]/12 text-[#64d2ff]"><Footprints size={19} /></span>
+      <div className="panel mt-3 flex min-h-[82px] items-center gap-3 px-4 py-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-[color-mix(in_srgb,var(--steps)_12%,transparent)] text-[var(--steps)]"><Footprints size={19} /></span>
         <div className="min-w-0 flex-1"><p className="m-0 text-sm font-semibold">Keep moving</p><p className="mt-1 text-[11px] text-white/38">{formatNumber(stepsRemaining)} steps to your goal</p></div>
-        <button onClick={onEditSteps} className="pressable min-h-11 rounded-full bg-white px-3.5 text-[11px] font-bold text-black">Update</button>
+        <button onClick={onEditSteps} className="primary-action pressable min-h-11 rounded-[13px] px-3.5 text-[10px] font-black">Update</button>
       </div>
     );
   }
   return (
-    <div className="health-card mt-3 flex min-h-[78px] items-center gap-3 px-4 py-3">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#30d158]/12 text-[#30d158]"><Check size={19} /></span>
+    <div className="panel mt-3 flex min-h-[82px] items-center gap-3 px-4 py-3">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-[color-mix(in_srgb,var(--success)_12%,transparent)] text-[var(--success)]"><Check size={19} /></span>
       <div><p className="m-0 text-sm font-semibold">Core targets complete</p><p className="mt-1 text-[11px] text-white/38">Keep the rest of the day steady.</p></div>
     </div>
   );

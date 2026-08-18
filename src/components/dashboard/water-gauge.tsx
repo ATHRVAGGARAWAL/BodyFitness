@@ -18,9 +18,9 @@ export function WaterGauge({
   const targetFill = Math.min(targetMl / 4_000, 1);
 
   return (
-    <div className="health-card relative min-h-[176px] overflow-hidden">
+    <div className="panel relative min-h-[176px] overflow-hidden">
       <div className="absolute inset-x-0 top-5 z-10 text-center">
-        <p className="m-0 text-[12px] font-semibold text-white/42">Water</p>
+        <p className="eyebrow-label m-0">Hydration</p>
         <p className="number-font mb-0 mt-1 text-[29px] font-bold leading-none">
           {(valueMl / 1_000).toFixed(2)}
           <span className="ml-1 text-xs tracking-normal text-white/38">L</span>
@@ -40,11 +40,11 @@ export function WaterGauge({
           </clipPath>
         </defs>
         <g clipPath={`url(#fill-${id})`}>
-          <rect width="180" height="180" fill="#0a84ff" opacity="0.78" />
+          <rect width="180" height="180" fill="var(--steps)" opacity="0.68" />
           <path
             d="M-24 6 C 2 -5, 25 17, 52 6 S 100 -5, 128 6 S 174 17, 204 5 V 22 H -24 Z"
-            fill="#9be7ff"
-            opacity="0.8"
+            fill="var(--surface)"
+            opacity="0.2"
             style={{ animation: "liquid-drift 1.9s linear infinite alternate" }}
           />
         </g>

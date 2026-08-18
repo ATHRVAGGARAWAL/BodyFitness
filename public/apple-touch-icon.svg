@@ -1,8 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#000"/>
-  <g fill="none" stroke-linecap="round" transform="rotate(-90 256 256)">
-    <circle cx="256" cy="256" r="154" stroke="#ff375f" stroke-width="42" stroke-dasharray="820 148"/>
-    <circle cx="256" cy="256" r="104" stroke="#b6ff2e" stroke-width="42" stroke-dasharray="540 114"/>
-    <circle cx="256" cy="256" r="54" stroke="#64d2ff" stroke-width="42" stroke-dasharray="265 74"/>
-  </g>
+  <rect width="512" height="512" rx="112" fill="#09090d"/>
+  <rect x="82" y="82" width="348" height="348" rx="84" fill="#121218" stroke="#2b2b36" stroke-width="8"/>
+  <rect x="112" y="112" width="132" height="132" rx="36" fill="#7c5cff"/>
+  <rect x="268" y="112" width="132" height="132" rx="36" fill="#1c2818"/>
+  <path d="M302 198l24-30 18 19 26-37" fill="none" stroke="#b7f36b" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="112" y="268" width="132" height="132" rx="36" fill="#14252c"/>
+  <path d="M146 340h64M178 308v64" stroke="#65d9ff" stroke-width="16" stroke-linecap="round"/>
+  <rect x="268" y="268" width="132" height="132" rx="36" fill="#f7f6fb"/>
+  <text x="334" y="350" fill="#111116" font-family="Arial, sans-serif" font-size="50" font-weight="900" text-anchor="middle" dominant-baseline="middle">BF</text>
 </svg>

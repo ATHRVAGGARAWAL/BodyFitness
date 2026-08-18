@@ -24,9 +24,10 @@ export function ManualMealSheet({ open, onOpenChange, onAdd }: { open: boolean; 
     <Drawer.Root open={open} onOpenChange={handleOpenChange} shouldScaleBackground={false}>
       <Drawer.Portal>
         <Drawer.Overlay className="sheet-overlay fixed inset-0 z-[90] backdrop-blur-sm" />
-        <Drawer.Content className="glass fixed bottom-0 left-1/2 z-[95] w-full max-w-[430px] -translate-x-1/2 rounded-t-[30px] px-5 pb-[calc(25px+var(--safe-bottom))] pt-3 outline-none">
-          <div className="mx-auto h-1.5 w-10 rounded-full bg-white/22" />
-          <Drawer.Title className="mb-5 mt-5 text-[27px] font-bold tracking-[-0.04em]">Log meal manually</Drawer.Title>
+        <Drawer.Content className="sheet-surface fixed bottom-0 left-1/2 z-[95] w-full max-w-[430px] -translate-x-1/2 rounded-t-[28px] px-5 pb-[calc(25px+var(--safe-bottom))] pt-3 outline-none">
+          <div className="sheet-handle mx-auto" />
+          <p className="eyebrow-label mb-0 mt-5">Quick input</p>
+          <Drawer.Title className="mb-5 mt-1 text-[27px] font-black tracking-[-0.045em]">Manual meal</Drawer.Title>
           <label className="block">
             <span className="mb-2 block text-xs font-semibold text-white/40">Meal name</span>
             <input autoFocus className="ios-field" placeholder="e.g. Paneer rice bowl" value={values.name} onChange={(event) => setValues((value) => ({ ...value, name: event.target.value }))} />
@@ -43,7 +44,7 @@ export function ManualMealSheet({ open, onOpenChange, onAdd }: { open: boolean; 
               </label>
             ))}
           </div>
-          <button disabled={!values.name || !values.calories} onClick={() => { onAdd(values); onOpenChange(false); }} className="pressable mt-5 flex min-h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-white text-sm font-bold text-black disabled:opacity-35">
+          <button disabled={!values.name || !values.calories} onClick={() => { onAdd(values); onOpenChange(false); }} className="primary-action pressable mt-5 flex min-h-14 w-full items-center justify-center gap-2 rounded-[15px] text-sm font-black disabled:opacity-35">
             <Plus size={18} /> Add meal
           </button>
         </Drawer.Content>

@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { CheckCircle2 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import {
   createContext,
@@ -59,7 +60,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       document.documentElement.style.colorScheme = resolved;
       document.querySelector('meta[name="theme-color"]')?.setAttribute(
         "content",
-        resolved === "dark" ? "#000000" : "#F2F2F7",
+        resolved === "dark" ? "#09090d" : "#f2f1f7",
       );
     };
 
@@ -102,12 +103,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <AnimatePresence>
           {toast && (
             <motion.div
-              initial={{ y: 18, opacity: 0, scale: 0.94 }}
+              initial={{ y: -18, opacity: 0, scale: 0.94 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 12, opacity: 0, scale: 0.96 }}
-              className="glass fixed left-1/2 z-[90] w-max max-w-[calc(100%-40px)] -translate-x-1/2 rounded-full px-4 py-2.5 text-sm font-semibold"
-              style={{ bottom: cameraActive ? 26 : "calc(94px + var(--safe-bottom))" }}
+              exit={{ y: -12, opacity: 0, scale: 0.96 }}
+              className="glass fixed left-1/2 top-[calc(var(--safe-top)+14px)] z-[90] flex w-max max-w-[calc(100%-32px)] -translate-x-1/2 items-center gap-2.5 rounded-[17px] px-3.5 py-3 text-[12px] font-semibold"
             >
+              <span className="flex h-7 w-7 items-center justify-center rounded-[9px] bg-[var(--accent-soft)] text-[var(--accent-strong)]">
+                <CheckCircle2 size={16} strokeWidth={2.4} />
+              </span>
               {toast}
             </motion.div>
           )}
@@ -124,15 +127,12 @@ function LaunchScreen() {
         initial={{ scale: 0.86, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 24 }}
-        className="relative h-24 w-24"
+        className="relative grid h-24 w-24 grid-cols-2 gap-2 rounded-[26px] border border-white/10 bg-white/[0.045] p-3"
       >
-        {["#ff375f", "#b6ff2e", "#64d2ff"].map((color, index) => (
-          <div
-            key={color}
-            className="absolute rounded-full border-[7px]"
-            style={{ inset: index * 12, borderColor: color }}
-          />
-        ))}
+        <span className="rounded-[10px] bg-[var(--accent)]" />
+        <span className="rounded-[10px] bg-[var(--protein)]" />
+        <span className="rounded-[10px] bg-[var(--steps)]" />
+        <span className="flex items-center justify-center rounded-[10px] bg-white text-[11px] font-black text-black">BF</span>
       </motion.div>
     </div>
   );

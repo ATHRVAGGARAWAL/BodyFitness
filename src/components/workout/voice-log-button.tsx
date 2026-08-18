@@ -61,20 +61,20 @@ export function VoiceLogButton({ exerciseName, onParsed }: { exerciseName: strin
       aria-label={state === "recording" ? "Stop voice logging" : "Log set by voice"}
       onClick={state === "recording" ? stop : state === "idle" ? start : undefined}
       disabled={state === "processing"}
-      className="relative flex min-h-11 items-center gap-2 overflow-hidden rounded-full bg-white/[0.07] px-3 text-xs font-semibold disabled:opacity-70"
+      className="relative flex min-h-11 items-center gap-2 overflow-hidden rounded-[13px] border border-[var(--border)] bg-[var(--accent-soft)] px-3 text-xs font-bold text-[var(--accent-strong)] disabled:opacity-70"
     >
       <AnimatePresence>
         {state === "recording" && (
           <motion.span
             initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 0.9, scale: 1.1, rotate: 360 }}
+            animate={{ opacity: [0.18, 0.45, 0.18], scale: [0.95, 1.04, 0.95] }}
             exit={{ opacity: 0, scale: 0.5 }}
-            transition={{ duration: 1.4, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-0 bg-[conic-gradient(from_90deg,#ff375f,#bf5af2,#64d2ff,#30d158,#ff375f)] blur-md"
+            transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0 bg-[var(--accent)]"
           />
         )}
       </AnimatePresence>
-      <span className="relative flex h-7 w-7 items-center justify-center rounded-full bg-black/65">
+      <span className="relative flex h-7 w-7 items-center justify-center rounded-[9px] bg-[var(--surface)]">
         {state === "recording" ? <Square size={11} fill="currentColor" /> : state === "processing" ? <WandSparkles size={15} /> : <Mic size={15} />}
       </span>
       <span className="relative">{state === "recording" ? "Listening…" : state === "processing" ? "Parsing…" : "Speak set"}</span>
