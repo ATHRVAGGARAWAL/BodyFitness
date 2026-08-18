@@ -1,0 +1,189 @@
+@import "tailwindcss";
+
+:root {
+  --background: #000000;
+  --surface: #1c1c1e;
+  --surface-elevated: #242426;
+  --label: #ffffff;
+  --secondary-label: rgba(235, 235, 245, 0.6);
+  --tertiary-label: rgba(235, 235, 245, 0.3);
+  --separator: rgba(84, 84, 88, 0.55);
+  --system-red: #ff375f;
+  --system-green: #30d158;
+  --system-blue: #0a84ff;
+  --system-cyan: #64d2ff;
+  --system-yellow: #ffd60a;
+  --system-purple: #bf5af2;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  background: #09090b;
+  color-scheme: dark;
+  overscroll-behavior-y: none;
+}
+
+html,
+body {
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 50% -20%, rgba(71, 71, 77, 0.22), transparent 38%),
+    #09090b;
+  color: var(--label);
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  touch-action: manipulation;
+}
+
+input,
+select,
+textarea {
+  color: white;
+}
+
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(235, 235, 245, 0.3);
+}
+
+.app-frame {
+  position: relative;
+  width: min(100%, 430px);
+  min-height: 100dvh;
+  margin-inline: auto;
+  overflow-x: clip;
+  background: #000;
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.55);
+}
+
+.page-shell {
+  min-height: 100dvh;
+  padding: calc(var(--safe-top) + 10px) 16px calc(104px + var(--safe-bottom));
+  transition: padding-top 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+body:has(.rest-timer-active) .page-shell {
+  padding-top: calc(var(--safe-top) + 64px);
+}
+
+.number-font {
+  font-family: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.035em;
+}
+
+.glass {
+  background: rgba(28, 28, 30, 0.74);
+  box-shadow:
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.16),
+    0 18px 45px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(26px) saturate(180%);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+}
+
+.ios-card {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.035), transparent 45%),
+    var(--surface);
+  border-radius: 24px;
+  box-shadow:
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.1),
+    0 10px 35px rgba(0, 0, 0, 0.22);
+}
+
+.ios-field {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 14px;
+  outline: none;
+  background: rgba(118, 118, 128, 0.2);
+  padding: 0 14px;
+  transition: box-shadow 160ms ease, background 160ms ease;
+}
+
+.ios-field:focus {
+  background: rgba(118, 118, 128, 0.28);
+  box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.75);
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.pressable {
+  transition: transform 130ms ease, opacity 130ms ease, background 130ms ease;
+}
+
+.pressable:active {
+  transform: scale(0.97);
+  opacity: 0.82;
+}
+
+.hairline {
+  box-shadow: inset 0 -0.5px 0 var(--separator);
+}
+
+@keyframes liquid-drift {
+  from { transform: translateX(-24px); }
+  to { transform: translateX(0); }
+}
+
+@keyframes siri-orbit {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.08); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

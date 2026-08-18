@@ -1,0 +1,118 @@
+"use client";
+
+import { AnimatePresence, motion } from "framer-motion";
+import { usePathname } from "next/navigation";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { BottomTabBar } from "@/components/bottom-tab-bar";
+import { Onboarding } from "@/components/onboarding";
+import { RestTimerPill } from "@/components/rest-timer-pill";
+import { useBodyFitnessStore } from "@/lib/store";
+
+interface ChromeContextValue {
+  cameraActive: boolean;
+  setCameraActive: (active: boolean) => void;
+  showToast: (message: string) => void;
+}
+
+const ChromeContext = createContext<ChromeContextValue | null>(null);
+
+export function useAppChrome() {
+  const value = useContext(ChromeContext);
+  if (!value) throw new Error("useAppChrome must be used inside AppShell");
+  return value;
+}
+
+export function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const hydrated = useBodyFitnessStore((state) => state.hydrated);
+  const onboardingComplete = useBodyFitnessStore((state) => state.onboardingComplete);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = useCallback((message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(null), 2600);
+  }, []);
+
+  useEffect(() => {
+    if (useBodyFitnessStore.persist.hasHydrated()) {
+      useBodyFitnessStore.getState().setHydrated(true);
+    }
+  }, []);
+
+  const context = useMemo(
+    () => ({ cameraActive, setCameraActive, showToast }),
+    [cameraActive, showToast],
+  );
+
+  return (
+    <ChromeContext.Provider value={context}>
+      <div className={`app-frame ${hydrated && !onboardingComplete ? "h-[100dvh] overflow-hidden" : ""}`}>
+        {!hydrated ? (
+          <LaunchScreen />
+        ) : (
+          <>
+            <RestTimerPill />
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={pathname}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ type: "spring", stiffness: 420, damping: 38 }}
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
+            <AnimatePresence>
+              {!cameraActive && <BottomTabBar />}
+            </AnimatePresence>
+            {!onboardingComplete && <Onboarding />}
+          </>
+        )}
+
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              initial={{ y: 18, opacity: 0, scale: 0.94 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 12, opacity: 0, scale: 0.96 }}
+              className="glass fixed left-1/2 z-[90] w-max max-w-[calc(100%-40px)] -translate-x-1/2 rounded-full px-4 py-2.5 text-sm font-semibold"
+              style={{ bottom: cameraActive ? 26 : "calc(94px + var(--safe-bottom))" }}
+            >
+              {toast}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </ChromeContext.Provider>
+  );
+}
+
+function LaunchScreen() {
+  return (
+    <div className="flex min-h-[100dvh] items-center justify-center bg-black">
+      <motion.div
+        initial={{ scale: 0.86, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 24 }}
+        className="relative h-24 w-24"
+      >
+        {["#ff375f", "#b6ff2e", "#64d2ff"].map((color, index) => (
+          <div
+            key={color}
+            className="absolute rounded-full border-[7px]"
+            style={{ inset: index * 12, borderColor: color }}
+          />
+        ))}
+      </motion.div>
+    </div>
+  );
+}
