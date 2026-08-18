@@ -16,19 +16,16 @@ export function HabitList({
 }) {
   return (
     <div className="ios-card overflow-hidden">
-      <div className="flex items-end justify-between px-4 pb-3 pt-4">
-        <div>
-          <p className="section-kicker m-0">Mess survival</p>
-          <p className="mb-0 mt-1 text-sm font-semibold">Daily habits</p>
-        </div>
-        <p className="m-0 text-[9px] font-semibold text-white/25">Swipe to complete</p>
+      <div className="px-4 pb-2 pt-4">
+        <p className="m-0 text-[13px] font-semibold text-white/42">Mess survival</p>
+        <p className="mt-1 text-[11px] text-white/25">Swipe right to complete</p>
       </div>
       <div>
         {habits.map((habit, index) => {
           const complete = completedIds.includes(habit.id);
           return (
             <div key={habit.id} className="relative overflow-hidden">
-              <div className="absolute inset-0 flex items-center bg-gradient-to-r from-[#30d158] to-[#62e779] pl-5 text-black">
+              <div className="absolute inset-0 flex items-center bg-[#30d158] pl-5 text-black">
                 <Check size={20} strokeWidth={3} />
               </div>
               <motion.button
@@ -41,13 +38,13 @@ export function HabitList({
                 onClick={() => onToggle(habit.id)}
                 whileTap={{ scale: 0.99 }}
                 className={cn(
-                  "relative flex min-h-[58px] w-full items-center gap-3 bg-[#121214]/78 px-4 text-left backdrop-blur-xl",
+                  "relative flex min-h-[54px] w-full items-center gap-3 bg-[#1c1c1e] px-4 text-left",
                   index < habits.length - 1 && "hairline",
                 )}
               >
                 <motion.span
                   animate={{ backgroundColor: complete ? "#30d158" : "rgba(255,255,255,.06)" }}
-                  className="flex h-[27px] w-[27px] shrink-0 items-center justify-center rounded-full ring-1 ring-white/15"
+                  className="flex h-[25px] w-[25px] shrink-0 items-center justify-center rounded-full ring-1 ring-white/15"
                 >
                   <AnimateCheck visible={complete} />
                 </motion.span>

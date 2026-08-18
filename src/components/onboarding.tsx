@@ -37,16 +37,14 @@ export function Onboarding() {
       animate={{ opacity: 1 }}
       className="fixed inset-0 z-[100] mx-auto w-full max-w-[430px] overflow-hidden bg-black"
     >
-      <div className="absolute inset-x-0 top-0 h-80 bg-[radial-gradient(circle_at_50%_0%,rgba(191,90,242,.27),transparent_68%)]" />
-      <div className="surface-grid absolute inset-0 opacity-30" />
-      <div className="absolute -left-24 bottom-0 h-64 w-64 rounded-full bg-[#0a84ff]/8 blur-[80px]" />
+      <div className="absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_50%_0%,rgba(191,90,242,.25),transparent_68%)]" />
       <div className="relative flex min-h-[100dvh] flex-col px-5 pb-[calc(22px+var(--safe-bottom))] pt-[calc(18px+var(--safe-top))]">
         <div className="flex h-11 items-center justify-between">
           <button
             aria-label="Back"
             onClick={back}
             className={cn(
-              "icon-button pressable !h-10 !w-10 transition-opacity",
+              "flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition-opacity",
               step === 0 && "pointer-events-none opacity-0",
             )}
           >
@@ -89,7 +87,7 @@ export function Onboarding() {
         {step < 3 ? (
           <button
             onClick={next}
-            className="pressable mt-4 flex min-h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-white text-[17px] font-bold text-black shadow-[0_12px_38px_rgba(255,255,255,.12)]"
+            className="pressable mt-4 flex min-h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-white text-[17px] font-bold text-black"
           >
             {step === 0 ? "Set up my plan" : "Continue"}
             <ArrowRight size={19} strokeWidth={2.6} />
@@ -111,7 +109,7 @@ export function Onboarding() {
 function WelcomeStep() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center pb-8 text-center">
-      <div className="relative mb-9 h-36 w-36 drop-shadow-[0_24px_60px_rgba(191,90,242,.22)]">
+      <div className="relative mb-9 h-36 w-36">
         {["#ff375f", "#b6ff2e", "#64d2ff"].map((color, index) => (
           <motion.div
             key={color}
@@ -124,7 +122,7 @@ function WelcomeStep() {
         ))}
         <Sparkles className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-white" />
       </div>
-      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-[#d28cff]">Private by design</p>
+      <p className="mb-2 text-sm font-bold uppercase tracking-[0.18em] text-[#bf5af2]">Private by design</p>
       <h1 className="m-0 text-[38px] font-bold leading-[0.98] tracking-[-0.05em]">
         Your body,
         <br />in motion.
@@ -225,7 +223,7 @@ function LifestyleStep({
         <NumberField label="Session length" value={profile.sessionMinutes} suffix="minutes" step={5} onChange={(sessionMinutes) => setProfile((v) => ({ ...v, sessionMinutes }))} />
         <NumberField label="Sleep" value={profile.sleepHours} suffix="hours" step={0.5} onChange={(sleepHours) => setProfile((v) => ({ ...v, sleepHours }))} />
       </div>
-      <div className="flex gap-3 rounded-[20px] bg-[#0a84ff]/10 p-4 text-[#64d2ff] ring-1 ring-[#64d2ff]/10">
+      <div className="flex gap-3 rounded-[18px] bg-[#0a84ff]/12 p-4 text-[#64d2ff]">
         <Moon className="mt-0.5 h-5 w-5 shrink-0" />
         <p className="m-0 text-[13px] leading-5 text-white/58">
           Sleep shapes recovery coaching, but we do not invent a calorie penalty for a short night.
@@ -256,7 +254,7 @@ function TargetStep({
         <TargetCard label="Water" value={(targets.waterMl / 1_000).toFixed(1)} unit="litres" color="#64d2ff" />
         <TargetCard label="Steps" value={`${Math.round(targets.steps / 1_000)}k`} unit="daily" color="#bf5af2" />
       </div>
-      <div className="hero-surface p-4">
+      <div className="ios-card p-4">
         <div className="flex items-center justify-between">
           <div>
             <p className="m-0 text-sm font-semibold">Daily deficit</p>
@@ -358,7 +356,7 @@ function Segmented({
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="relative grid grid-cols-2 rounded-[15px] bg-white/[0.07] p-1 ring-1 ring-white/[0.055]">
+    <div className="relative grid grid-cols-2 rounded-[13px] bg-white/10 p-1">
       {options.map(([option, label]) => (
         <button
           key={option}
@@ -368,7 +366,7 @@ function Segmented({
           {value === option && (
             <motion.span
               layoutId="onboarding-segment"
-              className="absolute inset-0 rounded-[11px] bg-white/[0.15] shadow-[inset_0_1px_0_rgba(255,255,255,.12),0_4px_14px_rgba(0,0,0,.2)]"
+              className="absolute inset-0 rounded-[10px] bg-white/15 shadow-sm"
             />
           )}
           <span className="relative">{label}</span>
@@ -390,11 +388,10 @@ function TargetCard({
   color: string;
 }) {
   return (
-    <div className="ios-card min-h-[108px] overflow-hidden p-4">
-      <span aria-hidden className="absolute -right-9 -top-9 h-24 w-24 rounded-full blur-[36px]" style={{ background: `${color}22` }} />
-      <div className="relative mb-4 h-2 w-2 rounded-full shadow-[0_0_12px_currentColor]" style={{ background: color, color }} />
-      <p className="relative m-0 text-xs font-semibold text-white/42">{label}</p>
-      <p className="number-font relative mb-0 mt-1 text-[27px] font-bold leading-none">
+    <div className="ios-card min-h-[108px] p-4">
+      <div className="mb-4 h-2 w-2 rounded-full shadow-[0_0_12px_currentColor]" style={{ background: color, color }} />
+      <p className="m-0 text-xs font-semibold text-white/42">{label}</p>
+      <p className="number-font mb-0 mt-1 text-[27px] font-bold leading-none">
         {value} <span className="text-[11px] font-semibold tracking-normal text-white/35">{unit}</span>
       </p>
     </div>

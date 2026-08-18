@@ -44,13 +44,13 @@ export function AddPhysiqueSheet({ open, onOpenChange }: { open: boolean; onOpen
     <Drawer.Root open={open} onOpenChange={handleOpenChange} shouldScaleBackground={false}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-[90] bg-black/55 backdrop-blur-sm" />
-        <Drawer.Content className="glass-sheet fixed bottom-0 left-1/2 z-[95] w-full max-w-[430px] -translate-x-1/2 rounded-t-[32px] px-5 pb-[calc(24px+var(--safe-bottom))] pt-3 outline-none">
+        <Drawer.Content className="glass fixed bottom-0 left-1/2 z-[95] w-full max-w-[430px] -translate-x-1/2 rounded-t-[32px] px-5 pb-[calc(24px+var(--safe-bottom))] pt-3 outline-none">
           <div className="mx-auto h-1.5 w-10 rounded-full bg-white/22" />
           <Drawer.Title className="mb-1 mt-5 text-[27px] font-bold tracking-[-0.04em]">Weekly physique</Drawer.Title>
           <p className="mb-5 mt-1 text-xs text-white/38">Use similar lighting, distance and posture each week.</p>
           <div className="grid grid-cols-3 gap-2">
             {(["front", "side", "back"] as Pose[]).map((pose) => (
-              <label key={pose} className={`metric-tile relative flex h-36 flex-col items-center justify-center overflow-hidden ${files[pose] ? "ring-1 ring-[#30d158]" : ""}`}>
+              <label key={pose} className={`relative flex h-36 flex-col items-center justify-center overflow-hidden rounded-[18px] bg-white/[0.055] ${files[pose] ? "ring-1 ring-[#30d158]" : ""}`}>
                 {files[pose] ? <FilePreview file={files[pose]!} alt={`${pose} preview`} /> : <><Camera size={20} className="text-white/36" /><span className="mt-2 text-[10px] font-semibold capitalize text-white/40">{pose}</span></>}
                 <input className="hidden" type="file" accept="image/*" capture="user" onChange={(event) => { const file = event.target.files?.[0]; if (file) setFiles((value) => ({ ...value, [pose]: file })); }} />
               </label>

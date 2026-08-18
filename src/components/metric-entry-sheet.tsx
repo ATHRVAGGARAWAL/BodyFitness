@@ -27,7 +27,7 @@ export function MetricEntrySheet({
     <Drawer.Root open={open} onOpenChange={handleOpenChange} shouldScaleBackground={false}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-[90] bg-black/55 backdrop-blur-sm" />
-        <Drawer.Content className="glass-sheet fixed bottom-0 left-1/2 z-[95] w-full max-w-[430px] -translate-x-1/2 rounded-t-[30px] px-5 pb-[calc(24px+var(--safe-bottom))] pt-3 outline-none">
+        <Drawer.Content className="glass fixed bottom-0 left-1/2 z-[95] w-full max-w-[430px] -translate-x-1/2 rounded-t-[30px] px-5 pb-[calc(24px+var(--safe-bottom))] pt-3 outline-none">
           <div className="mx-auto h-1.5 w-10 rounded-full bg-white/22" />
           <Drawer.Title className="mt-5 text-center text-xl font-bold">{title}</Drawer.Title>
           <div className="relative mx-auto mt-5 max-w-[240px]">

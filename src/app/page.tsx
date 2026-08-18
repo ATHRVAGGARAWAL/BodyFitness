@@ -17,6 +17,7 @@ import { useBodyFitnessStore } from "@/lib/store";
 import { cn, formatNumber } from "@/lib/utils";
 
 export default function DashboardPage() {
+  const profile = useBodyFitnessStore((state) => state.profile);
   const targets = useBodyFitnessStore((state) => state.targets);
   const meals = useBodyFitnessStore((state) => state.meals);
   const dailyByDate = useBodyFitnessStore((state) => state.dailyByDate);
@@ -50,15 +51,16 @@ export default function DashboardPage() {
     <main className="page-shell">
       <LargeTitle
         eyebrow={new Intl.DateTimeFormat("en-IN", { weekday: "long", month: "long", day: "numeric" }).format(new Date())}
-        title="Summary"
+        title={`Hi, ${profile.currentWeightKg ? "Athlete" : "there"}`}
         action={
-          <button aria-label="Open settings" onClick={() => setSettingsOpen(true)} className="icon-button pressable">
+          <button aria-label="Open settings" onClick={() => setSettingsOpen(true)} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-white/70">
             <Settings2 size={19} />
           </button>
         }
       />
 
-      <div className="mb-2 flex items-center justify-end px-1">
+      <div className="mb-3 flex items-center justify-between px-1">
+        <p className="m-0 text-[13px] font-semibold text-white/42">Your rings</p>
         {usingDemo && <span className="rounded-full bg-white/[0.07] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-white/35">Sample data</span>}
       </div>
       <button className="w-full text-left" onClick={() => setStepsOpen(true)} aria-label="Open rings and edit steps">
@@ -72,28 +74,26 @@ export default function DashboardPage() {
         />
       </button>
 
-      <section className="mt-8">
+      <section className="mt-7">
         <div className="mb-3 flex items-end justify-between px-1">
           <div>
-            <p className="section-kicker m-0">Foundation</p>
-            <p className="mb-0 mt-1 text-[21px] font-bold tracking-[-0.035em]">Daily non-negotiables</p>
+            <p className="m-0 text-[20px] font-bold tracking-[-0.03em]">Daily non-negotiables</p>
+            <p className="mt-1 text-xs text-white/34">Small actions, repeated.</p>
           </div>
-          <Sparkles size={18} className="mb-1 text-[#bf5af2] drop-shadow-[0_0_12px_#bf5af2]" />
+          <Sparkles size={18} className="text-[#bf5af2]" />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="ios-card flex min-h-[184px] flex-col justify-between overflow-hidden p-4">
-            <div aria-hidden className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[#bf5af2]/15 blur-[38px]" />
+          <div className="ios-card flex min-h-[154px] flex-col justify-between p-4">
             <div className="flex items-start justify-between">
-              <div className="flex h-10 w-10 items-center justify-center rounded-[15px] bg-[#bf5af2]/15 text-[#d28cff] ring-1 ring-[#bf5af2]/15">
-                <span className="number-font text-[13px] font-black">5g</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#bf5af2]/15 text-[#bf5af2]">
+                <span className="number-font text-[12px] font-black">5g</span>
               </div>
               <IosToggle checked={daily?.creatineTaken ?? false} onChange={setCreatine} />
             </div>
-            <div className="relative">
-              <p className="section-kicker m-0">Supplement</p>
-              <p className="mb-0 mt-1 text-[18px] font-bold">Creatine</p>
-              <p className="mt-1 text-[10px] text-white/32">{daily?.creatineTaken ? "Done for today" : "Keep saturation steady"}</p>
+            <div>
+              <p className="m-0 text-[17px] font-bold">Creatine</p>
+              <p className="mt-1 text-[11px] text-white/36">Daily saturation</p>
             </div>
           </div>
           <WaterGauge valueMl={water} targetMl={targets.waterMl} onChange={addWater} />
@@ -104,21 +104,18 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section className="mt-8">
+      <section className="mt-7">
         <div className="mb-3 px-1">
-          <p className="section-kicker m-0">Intelligence</p>
-          <p className="mb-0 mt-1 text-[21px] font-bold tracking-[-0.035em]">Adaptive nutrition</p>
+          <p className="m-0 text-[20px] font-bold tracking-[-0.03em]">Adaptive nutrition</p>
+          <p className="mt-1 text-xs text-white/34">Trend over guilt.</p>
         </div>
         <AdaptiveCard insight={insight} target={targets.calories} demo={usingDemo} isFlexDay={flexDays.includes(today)} onToggleFlexDay={() => toggleFlexDay(today)} />
       </section>
 
-      <section className="mt-8">
+      <section className="mt-7">
         <div className="mb-3 flex items-center justify-between px-1">
-          <div>
-            <p className="section-kicker m-0">Nutrition log</p>
-            <p className="mb-0 mt-1 text-[21px] font-bold tracking-[-0.035em]">Today’s food</p>
-          </div>
-          <span className="capsule-control number-font flex h-8 items-center px-3 text-[10px] font-semibold text-white/38">{formatNumber(totals.proteinG)}g protein</span>
+          <p className="m-0 text-[20px] font-bold tracking-[-0.03em]">Today’s food</p>
+          <span className="number-font text-xs font-semibold text-white/35">{formatNumber(totals.proteinG)}g protein</span>
         </div>
         <div className="ios-card overflow-hidden">
           {visibleMeals.filter((meal) => localDateKey(meal.loggedAt) === today).slice(0, 3).map((meal, index, array) => (

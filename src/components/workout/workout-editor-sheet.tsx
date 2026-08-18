@@ -50,11 +50,11 @@ export function WorkoutEditorSheet({ open, onOpenChange, plan, onSave }: { open:
     <Drawer.Root open={open} onOpenChange={handleOpenChange} shouldScaleBackground={false}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-[90] bg-black/55 backdrop-blur-sm" />
-        <Drawer.Content className="glass-sheet fixed bottom-0 left-1/2 z-[95] flex max-h-[94dvh] w-full max-w-[430px] -translate-x-1/2 flex-col rounded-t-[32px] outline-none">
+        <Drawer.Content className="glass fixed bottom-0 left-1/2 z-[95] flex max-h-[94dvh] w-full max-w-[430px] -translate-x-1/2 flex-col rounded-t-[32px] outline-none">
           <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-white/22" />
           <div className="flex items-center justify-between px-5 py-4">
-            <div><p className="section-kicker m-0">PPLUL</p><Drawer.Title className="m-0 mt-1 text-[27px] font-bold tracking-[-0.04em]">Edit split</Drawer.Title></div>
-            <button onClick={() => onOpenChange(false)} className="icon-button pressable !h-9 !w-9"><X size={18} /></button>
+            <div><p className="m-0 text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">PPLUL</p><Drawer.Title className="m-0 mt-1 text-[27px] font-bold tracking-[-0.04em]">Edit split</Drawer.Title></div>
+            <button onClick={() => onOpenChange(false)} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10"><X size={18} /></button>
           </div>
           <div className="scrollbar-none overflow-y-auto px-5 pb-[calc(24px+var(--safe-bottom))]">
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={reorderDays}>
@@ -73,7 +73,7 @@ export function WorkoutEditorSheet({ open, onOpenChange, plan, onSave }: { open:
                   {draft.length > 1 && <button aria-label="Delete day" onClick={() => { const remaining = draft.filter((day) => day.id !== selectedDay.id); setDraft(remaining); setSelectedDayId(remaining[0]?.id ?? ""); }} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-[#ff453a]/12 text-[#ff453a]"><Trash2 size={17} /></button>}
                 </div>
 
-                <p className="section-kicker mb-2 mt-6">Exercises · drag to reorder</p>
+                <p className="mb-2 mt-6 text-[11px] font-bold uppercase tracking-[0.1em] text-white/35">Exercises · drag to reorder</p>
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={reorderExercises}>
                   <SortableContext items={selectedDay.exercises.map((exercise) => exercise.id)} strategy={verticalListSortingStrategy}>
                     <div className="space-y-3">
