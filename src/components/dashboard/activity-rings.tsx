@@ -20,6 +20,7 @@ export function ActivityRings({
   proteinTarget,
   steps,
   stepTarget,
+  onEditSteps,
 }: {
   calories: number;
   calorieTarget: number;
@@ -27,6 +28,7 @@ export function ActivityRings({
   proteinTarget: number;
   steps: number;
   stepTarget: number;
+  onEditSteps?: () => void;
 }) {
   const rings: RingDatum[] = [
     {
@@ -56,21 +58,14 @@ export function ActivityRings({
   ];
 
   return (
-    <section className="ios-card overflow-hidden p-4">
+    <section className="health-card overflow-hidden p-4">
+      <div className="mb-2 flex items-center justify-between">
+        <div><p className="m-0 text-[15px] font-semibold">Today</p><p className="mt-0.5 text-[11px] text-white/35">Your current progress</p></div>
+        {onEditSteps && <button onClick={onEditSteps} className="pressable min-h-11 rounded-full bg-white/[0.07] px-3 text-[11px] font-semibold text-white/60">Edit steps</button>}
+      </div>
       <div className="grid grid-cols-[1.1fr_.9fr] items-center gap-1">
         <div className="relative aspect-square w-full max-w-[222px] justify-self-center">
           <svg viewBox="0 0 224 224" className="h-full w-full -rotate-90 overflow-visible">
-            <defs>
-              {rings.map((ring) => (
-                <filter key={ring.label} id={`glow-${ring.label}`} x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              ))}
-            </defs>
             {rings.map((ring, index) => {
               const radius = 91 - index * 25;
               const circumference = 2 * Math.PI * radius;
@@ -90,7 +85,6 @@ export function ActivityRings({
                     initial={{ strokeDashoffset: circumference }}
                     animate={{ strokeDashoffset: circumference * (1 - progress) }}
                     transition={{ delay: index * 0.1, type: "spring", stiffness: 75, damping: 18 }}
-                    style={{ filter: `url(#glow-${ring.label})` }}
                   />
                   {ring.value > ring.target && (
                     <circle
@@ -110,7 +104,7 @@ export function ActivityRings({
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <p className="number-font m-0 text-[27px] font-bold leading-none">{Math.round((calories / calorieTarget) * 100)}%</p>
-            <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35">Today</p>
+            <p className="mt-1 text-[10px] font-semibold text-white/35">calorie goal</p>
           </div>
         </div>
 

@@ -19,7 +19,7 @@ export function AdaptiveCard({
 }) {
   const onTrack = insight.averageCalories === 0 || insight.variance <= 0;
   return (
-    <section className="ios-card p-4">
+    <section className="health-card p-4">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#bf5af2]/15 text-[#bf5af2]">
@@ -36,12 +36,12 @@ export function AdaptiveCard({
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-3">
-        <div className="rounded-[17px] bg-white/[0.045] p-3">
+        <div className="rounded-[16px] bg-white/[0.045] p-3">
           <p className="m-0 text-[10px] font-semibold text-white/35">Average</p>
           <p className="number-font mb-0 mt-1 text-[23px] font-bold">{formatNumber(insight.averageCalories || target - 74)}</p>
           <p className="m-0 text-[10px] text-white/28">kcal / logged day</p>
         </div>
-        <div className="rounded-[17px] bg-white/[0.045] p-3">
+        <div className="rounded-[16px] bg-white/[0.045] p-3">
           <p className="m-0 text-[10px] font-semibold text-white/35">vs target</p>
           <p className={`number-font mb-0 mt-1 flex items-center gap-1 text-[23px] font-bold ${onTrack ? "text-[#30d158]" : "text-[#ff9f0a]"}`}>
             {onTrack ? <ArrowDownRight size={18} /> : <ArrowRight size={18} />}

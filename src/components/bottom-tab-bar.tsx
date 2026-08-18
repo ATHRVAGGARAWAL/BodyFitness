@@ -32,6 +32,7 @@ export function BottomTabBar() {
           <Link
             key={tab.href}
             href={tab.href}
+            aria-current={active ? "page" : undefined}
             className={cn(
               "relative flex h-[58px] min-w-[74px] flex-col items-center justify-center gap-0.5 rounded-[19px] text-[10px] font-semibold transition-colors focus:outline-none focus-visible:bg-white/[0.12] focus-visible:text-white",
               active ? "text-white" : "text-white/45",

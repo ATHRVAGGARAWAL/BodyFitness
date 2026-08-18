@@ -15,10 +15,10 @@ export function HabitList({
   onToggle: (id: string) => void;
 }) {
   return (
-    <div className="ios-card overflow-hidden">
+    <div className="health-card overflow-hidden">
       <div className="px-4 pb-2 pt-4">
-        <p className="m-0 text-[13px] font-semibold text-white/42">Mess survival</p>
-        <p className="mt-1 text-[11px] text-white/25">Swipe right to complete</p>
+        <p className="m-0 text-[15px] font-semibold">Mess survival habits</p>
+        <p className="mt-1 text-[11px] text-white/35">Swipe right or tap to complete</p>
       </div>
       <div>
         {habits.map((habit, index) => {
@@ -38,7 +38,7 @@ export function HabitList({
                 onClick={() => onToggle(habit.id)}
                 whileTap={{ scale: 0.99 }}
                 className={cn(
-                  "relative flex min-h-[54px] w-full items-center gap-3 bg-[#1c1c1e] px-4 text-left",
+                  "relative flex min-h-[56px] w-full items-center gap-3 bg-[#1c1c1e] px-4 text-left",
                   index < habits.length - 1 && "hairline",
                 )}
               >

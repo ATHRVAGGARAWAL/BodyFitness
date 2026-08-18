@@ -108,6 +108,7 @@ function ProgressCircle({ progress, remaining }: { progress: number; remaining: 
           strokeLinecap="round"
           strokeWidth="3"
           strokeDasharray={circumference}
+          initial={false}
           animate={{ strokeDashoffset: circumference * (1 - progress) }}
         />
       </svg>

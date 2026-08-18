@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, ChevronRight, Flame, Settings2, Sparkles } from "lucide-react";
+import { Check, ChevronRight, Droplets, Flame, Footprints, Settings2, Utensils } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ActivityRings } from "@/components/dashboard/activity-rings";
 import { AdaptiveCard } from "@/components/dashboard/adaptive-card";
@@ -17,7 +18,6 @@ import { useBodyFitnessStore } from "@/lib/store";
 import { cn, formatNumber } from "@/lib/utils";
 
 export default function DashboardPage() {
-  const profile = useBodyFitnessStore((state) => state.profile);
   const targets = useBodyFitnessStore((state) => state.targets);
   const meals = useBodyFitnessStore((state) => state.meals);
   const dailyByDate = useBodyFitnessStore((state) => state.dailyByDate);
@@ -39,6 +39,9 @@ export default function DashboardPage() {
   const steps = daily?.steps || (usingDemo ? 6_840 : 0);
   const water = daily?.waterMl ?? 0;
   const completedHabitIds = daily?.completedHabitIds ?? [];
+  const proteinRemaining = Math.max(0, targets.proteinG - totals.proteinG);
+  const waterRemaining = Math.max(0, targets.waterMl - water);
+  const stepsRemaining = Math.max(0, targets.steps - steps);
   const insight = useMemo(
     () =>
       usingDemo
@@ -51,49 +54,50 @@ export default function DashboardPage() {
     <main className="page-shell">
       <LargeTitle
         eyebrow={new Intl.DateTimeFormat("en-IN", { weekday: "long", month: "long", day: "numeric" }).format(new Date())}
-        title={`Hi, ${profile.currentWeightKg ? "Athlete" : "there"}`}
+        title="Summary"
         action={
-          <button aria-label="Open settings" onClick={() => setSettingsOpen(true)} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-white/70">
+          <button aria-label="Open settings" onClick={() => setSettingsOpen(true)} className="icon-button pressable">
             <Settings2 size={19} />
           </button>
         }
       />
 
       <div className="mb-3 flex items-center justify-between px-1">
-        <p className="m-0 text-[13px] font-semibold text-white/42">Your rings</p>
+        <p className="m-0 text-[13px] font-semibold text-white/50">Activity</p>
         {usingDemo && <span className="rounded-full bg-white/[0.07] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-white/35">Sample data</span>}
       </div>
-      <button className="w-full text-left" onClick={() => setStepsOpen(true)} aria-label="Open rings and edit steps">
-        <ActivityRings
-          calories={totals.calories}
-          calorieTarget={targets.calories}
-          protein={totals.proteinG}
-          proteinTarget={targets.proteinG}
-          steps={steps}
-          stepTarget={targets.steps}
-        />
-      </button>
+      <ActivityRings
+        calories={totals.calories}
+        calorieTarget={targets.calories}
+        protein={totals.proteinG}
+        proteinTarget={targets.proteinG}
+        steps={steps}
+        stepTarget={targets.steps}
+        onEditSteps={() => setStepsOpen(true)}
+      />
 
-      <section className="mt-7">
-        <div className="mb-3 flex items-end justify-between px-1">
-          <div>
-            <p className="m-0 text-[20px] font-bold tracking-[-0.03em]">Daily non-negotiables</p>
-            <p className="mt-1 text-xs text-white/34">Small actions, repeated.</p>
-          </div>
-          <Sparkles size={18} className="text-[#bf5af2]" />
-        </div>
+      <NextAction
+        proteinRemaining={proteinRemaining}
+        waterRemaining={waterRemaining}
+        stepsRemaining={stepsRemaining}
+        onAddWater={() => addWater(250)}
+        onEditSteps={() => setStepsOpen(true)}
+      />
+
+      <section className="mt-8">
+        <SectionHeader title="Daily essentials" caption="The few actions that keep your plan moving." />
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="ios-card flex min-h-[154px] flex-col justify-between p-4">
+          <div className="health-card flex min-h-[168px] flex-col justify-between p-4">
             <div className="flex items-start justify-between">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#bf5af2]/15 text-[#bf5af2]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#bf5af2]/14 text-[#bf5af2]">
                 <span className="number-font text-[12px] font-black">5g</span>
               </div>
               <IosToggle checked={daily?.creatineTaken ?? false} onChange={setCreatine} />
             </div>
             <div>
               <p className="m-0 text-[17px] font-bold">Creatine</p>
-              <p className="mt-1 text-[11px] text-white/36">Daily saturation</p>
+              <p className="mt-1 text-[11px] text-white/38">{daily?.creatineTaken ? "Logged today" : "Maintain saturation"}</p>
             </div>
           </div>
           <WaterGauge valueMl={water} targetMl={targets.waterMl} onChange={addWater} />
@@ -104,20 +108,20 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section className="mt-7">
-        <div className="mb-3 px-1">
-          <p className="m-0 text-[20px] font-bold tracking-[-0.03em]">Adaptive nutrition</p>
-          <p className="mt-1 text-xs text-white/34">Trend over guilt.</p>
-        </div>
+      <section className="mt-8">
+        <SectionHeader title="Nutrition highlight" caption="Your recent pattern, without overreacting to one day." />
         <AdaptiveCard insight={insight} target={targets.calories} demo={usingDemo} isFlexDay={flexDays.includes(today)} onToggleFlexDay={() => toggleFlexDay(today)} />
       </section>
 
-      <section className="mt-7">
+      <section className="mt-8">
         <div className="mb-3 flex items-center justify-between px-1">
-          <p className="m-0 text-[20px] font-bold tracking-[-0.03em]">Today’s food</p>
+          <div>
+            <h2 className="section-title">Today’s food</h2>
+            <p className="section-caption">Meals added to your activity rings.</p>
+          </div>
           <span className="number-font text-xs font-semibold text-white/35">{formatNumber(totals.proteinG)}g protein</span>
         </div>
-        <div className="ios-card overflow-hidden">
+        <div className="health-card overflow-hidden">
           {visibleMeals.filter((meal) => localDateKey(meal.loggedAt) === today).slice(0, 3).map((meal, index, array) => (
             <motion.div key={meal.id} className={cn("flex min-h-[64px] items-center gap-3 px-4", index < array.length - 1 && "hairline")}>
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ff375f]/12 text-[#ff375f]">
@@ -160,5 +164,62 @@ function IosToggle({ checked, onChange }: { checked: boolean; onChange: (checked
         {checked && <Check size={14} className="text-[#30d158]" strokeWidth={3} />}
       </motion.span>
     </button>
+  );
+}
+
+function SectionHeader({ title, caption }: { title: string; caption: string }) {
+  return (
+    <div className="mb-3 px-1">
+      <h2 className="section-title">{title}</h2>
+      <p className="section-caption">{caption}</p>
+    </div>
+  );
+}
+
+function NextAction({
+  proteinRemaining,
+  waterRemaining,
+  stepsRemaining,
+  onAddWater,
+  onEditSteps,
+}: {
+  proteinRemaining: number;
+  waterRemaining: number;
+  stepsRemaining: number;
+  onAddWater: () => void;
+  onEditSteps: () => void;
+}) {
+  if (proteinRemaining > 0) {
+    return (
+      <div className="health-card mt-3 flex min-h-[78px] items-center gap-3 px-4 py-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#b6ff2e]/12 text-[#b6ff2e]"><Utensils size={19} /></span>
+        <div className="min-w-0 flex-1"><p className="m-0 text-sm font-semibold">Prioritize protein next</p><p className="mt-1 text-[11px] text-white/38">{formatNumber(proteinRemaining)}g remaining today</p></div>
+        <Link href="/snap-diet" className="pressable flex min-h-11 items-center rounded-full bg-white px-3.5 text-[11px] font-bold text-black">Log food</Link>
+      </div>
+    );
+  }
+  if (waterRemaining > 0) {
+    return (
+      <div className="health-card mt-3 flex min-h-[78px] items-center gap-3 px-4 py-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#64d2ff]/12 text-[#64d2ff]"><Droplets size={19} /></span>
+        <div className="min-w-0 flex-1"><p className="m-0 text-sm font-semibold">Hydration is next</p><p className="mt-1 text-[11px] text-white/38">{(waterRemaining / 1_000).toFixed(1)}L remaining today</p></div>
+        <button onClick={onAddWater} className="pressable min-h-11 rounded-full bg-white px-3.5 text-[11px] font-bold text-black">+250 ml</button>
+      </div>
+    );
+  }
+  if (stepsRemaining > 0) {
+    return (
+      <div className="health-card mt-3 flex min-h-[78px] items-center gap-3 px-4 py-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#64d2ff]/12 text-[#64d2ff]"><Footprints size={19} /></span>
+        <div className="min-w-0 flex-1"><p className="m-0 text-sm font-semibold">Keep moving</p><p className="mt-1 text-[11px] text-white/38">{formatNumber(stepsRemaining)} steps to your goal</p></div>
+        <button onClick={onEditSteps} className="pressable min-h-11 rounded-full bg-white px-3.5 text-[11px] font-bold text-black">Update</button>
+      </div>
+    );
+  }
+  return (
+    <div className="health-card mt-3 flex min-h-[78px] items-center gap-3 px-4 py-3">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#30d158]/12 text-[#30d158]"><Check size={19} /></span>
+      <div><p className="m-0 text-sm font-semibold">Core targets complete</p><p className="mt-1 text-[11px] text-white/38">Keep the rest of the day steady.</p></div>
+    </div>
   );
 }
