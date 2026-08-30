@@ -11,3 +11,8 @@ coverage
 .DS_Store
 public/sw.js
 public/swe-worker-*.js
+apps/api/dist
+apps/mobile/.expo
+apps/mobile/android
+apps/mobile/ios
+apps/mobile/dist

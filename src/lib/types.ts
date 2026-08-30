@@ -1,3 +1,24 @@
+import type {
+  Achievement,
+  AppProfile,
+  CircleFeed,
+  Connection,
+  HealthSource,
+  SharingPolicy,
+  SyncRecord,
+} from "@bodyfitness/contracts";
+
+export type {
+  Achievement,
+  AppProfile,
+  CircleFeed,
+  Connection,
+  HealthSource,
+  SharingPolicy,
+  StepSnapshot,
+  SyncRecord,
+} from "@bodyfitness/contracts";
+
 export type BmrSex = "male" | "female";
 export type OccupationActivity = "seated" | "mixed" | "active" | "manual";
 export type ExerciseType = "compound" | "isolation";
@@ -75,7 +96,24 @@ export interface DailyWellness {
   creatineTaken: boolean;
   waterMl: number;
   steps: number;
+  stepSource?: HealthSource;
+  stepSyncedAt?: string;
+  manualStepOverride?: boolean;
   completedHabitIds: string[];
+}
+
+export interface AccountState {
+  profile: AppProfile;
+  sharingDefaults: SharingPolicy;
+  circle: CircleFeed;
+  achievements: Achievement[];
+  connections: Connection[];
+  syncRecords: SyncRecord[];
+  deviceId: string;
+  syncCursor: string | null;
+  lastSyncedAt: string | null;
+  syncStatus: "local" | "idle" | "syncing" | "synced" | "error";
+  syncError: string | null;
 }
 
 export interface Exercise {
@@ -95,6 +133,15 @@ export interface WorkoutDay {
   exercises: Exercise[];
 }
 
+export interface WorkoutSession {
+  id: string;
+  dayId: string;
+  dayName: string;
+  startedAt: string;
+  /** Null while the session is still in progress. */
+  endedAt: string | null;
+}
+
 export interface SetLog {
   id: string;
   dayId: string;
@@ -106,6 +153,9 @@ export interface SetLog {
   e1rm: number;
   completedAt: string;
   isPr: boolean;
+  sessionId?: string;
+  /** Rest prescribed *after* this set, used to measure adherence against the next set. */
+  restPrescribedSeconds?: number;
 }
 
 export interface RestTimerState {
@@ -140,6 +190,7 @@ export interface VoiceSetParse {
 export interface ProgressPoint {
   week: string;
   date: string;
-  weight: number;
-  e1rm: number;
+  /** Null when no measurement exists for the week — the chart draws a gap rather than inventing one. */
+  weight: number | null;
+  e1rm: number | null;
 }

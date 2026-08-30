@@ -8,10 +8,16 @@ import { MetricEntrySheet } from "@/components/metric-entry-sheet";
 import { AddPhysiqueSheet } from "@/components/progress/add-physique-sheet";
 import { PhysiqueGallery } from "@/components/progress/physique-gallery";
 import { ProgressChart } from "@/components/progress/progress-chart";
-import { formatShortDate, localDateKey, shiftDate, startOfWeek } from "@/lib/date";
 import { demoProgress } from "@/lib/seed";
 import { useBodyFitnessStore } from "@/lib/store";
-import type { ProgressPoint } from "@/lib/types";
+import {
+  bodySignal,
+  bodySignalCopy,
+  buildProgressSeries,
+  formatDelta,
+  strengthDeltaPercent,
+  weightDelta,
+} from "@/lib/training-metrics";
 
 export default function ProgressPage() {
   const profile = useBodyFitnessStore((state) => state.profile);
@@ -33,9 +39,18 @@ export default function ProgressPage() {
     return [...unique.entries()].map(([id, name]) => ({ id, name }));
   }, [workoutPlan]);
   const selectedLift = compoundLifts.find((lift) => lift.id === selectedLiftId) ?? compoundLifts[0];
-  const chartData = useMemo(() => buildProgress(weightEntries, setLogs, selectedLift?.id, profile.currentWeightKg), [profile.currentWeightKg, selectedLift?.id, setLogs, weightEntries]);
+  const usingDemo = !weightEntries.length && !setLogs.length;
+  const chartData = useMemo(
+    () => (usingDemo ? demoProgress() : buildProgressSeries(weightEntries, setLogs, selectedLift?.id)),
+    [selectedLift?.id, setLogs, usingDemo, weightEntries],
+  );
+  const massDelta = useMemo(() => weightDelta(weightEntries), [weightEntries]);
+  const strengthDelta = useMemo(() => strengthDeltaPercent(setLogs, selectedLift?.id), [selectedLift?.id, setLogs]);
+  const signal = bodySignal(massDelta, strengthDelta);
   const latestWeight = weightEntries[0]?.weightKg ?? profile.currentWeightKg;
-  const latestStrength = chartData.at(-1)?.e1rm ?? 0;
+  const latestStrength = setLogs
+    .filter((log) => log.exerciseId === selectedLift?.id)
+    .reduce((best, log) => Math.max(best, log.e1rm), 0);
   const shouldRecalculate = Boolean(weightEntries[0] && Math.abs(latestWeight - profile.currentWeightKg) / profile.currentWeightKg >= 0.02);
 
   return (
@@ -45,7 +60,7 @@ export default function ProgressPage() {
       <section>
         <div className="mb-3 flex items-end justify-between px-1">
           <div><div className="mb-1 flex items-center gap-2"><span className="section-index">01</span><span className="section-rule" /></div><h2 className="section-title">Body × strength</h2><p className="section-caption">12-week signal with weekly smoothing.</p></div>
-          {!weightEntries.length && <span className="status-chip">Preview</span>}
+          {usingDemo && <span className="status-chip">Sample data</span>}
         </div>
         <div className="relative mb-3">
           <select aria-label="Select strength lift" value={selectedLift?.id} onChange={(event) => setSelectedLiftId(event.target.value)} className="ios-field h-12 appearance-none pr-10 text-xs font-bold">
@@ -57,8 +72,24 @@ export default function ProgressPage() {
       </section>
 
       <div className="mt-3 grid grid-cols-2 gap-3">
-        <Stat icon={<Scale size={18} />} label="Body mass" value={latestWeight.toFixed(1)} unit="kg" change="−1.6 / 8wk" color="var(--steps)" />
-        <Stat icon={<TrendingUp size={18} />} label={`${selectedLift?.name ?? "Lift"} e1RM`} value={latestStrength.toFixed(1)} unit="kg" change="+8.4% / 12wk" color="var(--accent-strong)" />
+        <Stat
+          icon={<Scale size={18} />}
+          label="Body mass"
+          value={latestWeight.toFixed(1)}
+          unit="kg"
+          change={formatDelta(massDelta, " kg")}
+          hint="Log twice to see a trend"
+          color="var(--steps)"
+        />
+        <Stat
+          icon={<TrendingUp size={18} />}
+          label={`${selectedLift?.name ?? "Lift"} e1RM`}
+          value={latestStrength ? latestStrength.toFixed(1) : "—"}
+          unit={latestStrength ? "kg" : ""}
+          change={formatDelta(strengthDelta, "%")}
+          hint="Train it twice to see a trend"
+          color="var(--accent-strong)"
+        />
       </div>
 
       {shouldRecalculate && (
@@ -76,10 +107,12 @@ export default function ProgressPage() {
         <PhysiqueGallery entries={physiqueWeeks} onAdd={() => setPhysiqueOpen(true)} />
       </section>
 
-      <div className="panel mt-4 flex min-h-[72px] items-center gap-3 px-4">
-        <span className="icon-tile text-[var(--protein)]"><Activity size={18} /></span>
-        <div><p className="m-0 text-sm font-bold">Recomp signal</p><p className="mt-1 text-[10px] text-white/32">Weight trending down while strength trends up.</p></div>
-      </div>
+      {signal && (
+        <div className="panel mt-4 flex min-h-[72px] items-center gap-3 px-4">
+          <span className="icon-tile text-[var(--protein)]"><Activity size={18} /></span>
+          <div><p className="m-0 text-sm font-bold">{bodySignalCopy[signal].title}</p><p className="mt-1 text-[10px] text-white/32">{bodySignalCopy[signal].detail}</p></div>
+        </div>
+      )}
 
       <MetricEntrySheet open={weightOpen} onOpenChange={setWeightOpen} title="Log body weight" value={latestWeight} unit="kg" onSave={(weight) => { addWeightEntry(weight); showToast("Weight logged"); }} />
       <AddPhysiqueSheet key={physiqueOpen ? "physique-open" : "physique-closed"} open={physiqueOpen} onOpenChange={setPhysiqueOpen} />
@@ -87,20 +120,6 @@ export default function ProgressPage() {
   );
 }
 
-function Stat({ icon, label, value, unit, change, color }: { icon: React.ReactNode; label: string; value: string; unit: string; change: string; color: string }) {
-  return <div className="panel p-4"><span className="icon-tile" style={{ color }}>{icon}</span><p className="mb-1 mt-4 text-[9px] font-black uppercase tracking-[0.07em] text-white/30">{label}</p><p className="number-font m-0 text-[26px] font-black">{value}<span className="ml-1 text-[9px] tracking-normal text-white/28">{unit}</span></p><p className="mt-1 text-[9px] font-bold" style={{ color }}>{change}</p></div>;
-}
-
-function buildProgress(weightEntries: ReturnType<typeof useBodyFitnessStore.getState>["weightEntries"], setLogs: ReturnType<typeof useBodyFitnessStore.getState>["setLogs"], liftId: string | undefined, fallbackWeight: number): ProgressPoint[] {
-  if (!weightEntries.length && !setLogs.length) return demoProgress();
-  const today = localDateKey();
-  return Array.from({ length: 12 }, (_, index) => {
-    const weekDate = shiftDate(today, -(11 - index) * 7);
-    const week = startOfWeek(new Date(`${weekDate}T12:00:00`));
-    const nextWeek = shiftDate(week, 7);
-    const weights = weightEntries.filter((entry) => entry.date >= week && entry.date < nextWeek).map((entry) => entry.weightKg);
-    const lifts = setLogs.filter((log) => log.exerciseId === liftId && localDateKey(log.completedAt) >= week && localDateKey(log.completedAt) < nextWeek).map((log) => log.e1rm);
-    const previous = index > 0 ? undefined : fallbackWeight;
-    return { date: week, week: formatShortDate(week), weight: Number((weights.length ? weights.reduce((sum, value) => sum + value, 0) / weights.length : previous ?? fallbackWeight - index * 0.05).toFixed(1)), e1rm: Number((lifts.length ? Math.max(...lifts) : 76 + index * 0.55).toFixed(1)) };
-  });
+function Stat({ icon, label, value, unit, change, hint, color }: { icon: React.ReactNode; label: string; value: string; unit: string; change: string | null; hint: string; color: string }) {
+  return <div className="panel p-4"><span className="icon-tile" style={{ color }}>{icon}</span><p className="mb-1 mt-4 text-[9px] font-black uppercase tracking-[0.07em] text-white/30">{label}</p><p className="number-font m-0 text-[26px] font-black">{value}{unit && <span className="ml-1 text-[9px] tracking-normal text-white/28">{unit}</span>}</p>{change ? <p className="mt-1 text-[9px] font-bold" style={{ color }}>{change}</p> : <p className="mt-1 text-[9px] font-semibold text-white/25">{hint}</p>}</div>;
 }

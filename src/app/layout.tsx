@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppShell } from "@/components/app-shell";
+import { AuthProvider } from "@/components/auth-provider";
+import { CloudSyncBridge } from "@/components/cloud-sync-bridge";
 
 export const metadata: Metadata = {
   title: {
@@ -26,8 +28,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover",
   themeColor: "#09090d",
 };
@@ -58,7 +58,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
       </head>
       <body>
-        <AppShell>{children}</AppShell>
+        <AuthProvider>
+          {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? <CloudSyncBridge /> : null}
+          <AppShell>{children}</AppShell>
+        </AuthProvider>
       </body>
     </html>
   );

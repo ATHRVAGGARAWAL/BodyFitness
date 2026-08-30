@@ -4,12 +4,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, ChevronUp, Trophy } from "lucide-react";
 import { useMemo, useState } from "react";
 import { VoiceLogButton } from "@/components/workout/voice-log-button";
-import { epley1Rm, isProgressiveOverload } from "@/lib/calculations";
 import { useBodyFitnessStore } from "@/lib/store";
 import type { Exercise, SetLog, VoiceSetParse } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const samplePrevious: Record<string, { weight: number; reps: number }> = {
+/**
+ * Starting values for the editable weight field before an exercise has any history.
+ * These seed a form input only — they never feed the displayed best or PR detection.
+ */
+const startingWeights: Record<string, { weight: number; reps: number }> = {
   "bench-press": { weight: 70, reps: 8 },
   "incline-db": { weight: 25, reps: 10 },
   "shoulder-press": { weight: 42.5, reps: 8 },
@@ -45,10 +48,14 @@ export function ExerciseCard({ exercise, dayId, index }: { exercise: Exercise; d
 
   const [sets, setSets] = useState<DraftSet[]>(() =>
     Array.from({ length: exercise.sets }, (_, setIndex) => {
-      const previous = samplePrevious[exercise.id];
+      const logged = previousBySet.get(setIndex + 1);
+      if (logged) {
+        return { weightKg: logged.weightKg, reps: logged.reps, complete: false, isPr: false };
+      }
+      const start = startingWeights[exercise.id];
       return {
-        weightKg: previous ? previous.weight : 20,
-        reps: previous ? Math.max(exercise.repMin, previous.reps - (setIndex > 1 ? 1 : 0)) : exercise.repMin,
+        weightKg: start ? start.weight : 20,
+        reps: start ? Math.max(exercise.repMin, start.reps - (setIndex > 1 ? 1 : 0)) : exercise.repMin,
         complete: false,
         isPr: false,
       };
@@ -56,7 +63,8 @@ export function ExerciseCard({ exercise, dayId, index }: { exercise: Exercise; d
   );
 
   const completedCount = sets.filter((set) => set.complete).length;
-  const bestE1rm = Math.max(0, ...previousBySet.values().map((log) => log.e1rm), samplePrevious[exercise.id] ? epley1Rm(samplePrevious[exercise.id].weight, samplePrevious[exercise.id].reps) : 0);
+  const bestE1rm = Math.max(0, ...previousBySet.values().map((log) => log.e1rm));
+  const restSeconds = exercise.restSeconds ?? restDefaults[exercise.type];
 
   function updateSet(setIndex: number, patch: Partial<DraftSet>) {
     setSets((current) => current.map((set, index) => index === setIndex ? { ...set, ...patch } : set));
@@ -64,10 +72,6 @@ export function ExerciseCard({ exercise, dayId, index }: { exercise: Exercise; d
 
   function completeSet(setIndex: number) {
     const draft = sets[setIndex];
-    const previous = previousBySet.get(setIndex + 1) ?? (samplePrevious[exercise.id] ? {
-      weightKg: samplePrevious[exercise.id].weight,
-      reps: samplePrevious[exercise.id].reps,
-    } : undefined);
     const log = logSet({
       dayId,
       exerciseId: exercise.id,
@@ -75,10 +79,10 @@ export function ExerciseCard({ exercise, dayId, index }: { exercise: Exercise; d
       setNumber: setIndex + 1,
       weightKg: draft.weightKg,
       reps: draft.reps,
+      restPrescribedSeconds: restSeconds,
     });
-    const isPr = log.isPr || isProgressiveOverload(draft, previous);
-    updateSet(setIndex, { complete: true, isPr });
-    startRestTimer(exercise.name, exercise.restSeconds ?? restDefaults[exercise.type]);
+    updateSet(setIndex, { complete: true, isPr: log.isPr });
+    startRestTimer(exercise.name, restSeconds);
   }
 
   function fillFromVoice(result: VoiceSetParse) {

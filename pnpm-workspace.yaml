@@ -1,5 +1,14 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
 allowBuilds:
+  browser-tabs-lock: true
+  bufferutil: true
+  core-js: true
+  esbuild: true
   unrs-resolver: true
+  utf-8-validate: true
 minimumReleaseAgeExclude:
   - '@vitest/expect@4.1.11'
   - '@vitest/mocker@4.1.11'
@@ -11,3 +20,10 @@ minimumReleaseAgeExclude:
   - lucide-react@1.32.0
   - openai@7.5.0
   - vitest@4.1.11
+  - '@clerk/backend@3.16.8'
+  - '@clerk/nextjs@7.7.8'
+  - fastify@5.12.1
+  - '@clerk/expo@4.5.0'
+peerDependencyRules:
+  allowedVersions:
+    utf-8-validate: '>=5.0.2 <7'

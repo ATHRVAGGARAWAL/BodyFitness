@@ -1,0 +1,94 @@
+{
+  "expo": {
+    "name": "BodyFitness",
+    "slug": "bodyfitness",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "bodyfitness",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.bodyfitness.mobile",
+      "entitlements": {
+        "com.apple.developer.healthkit": true
+      },
+      "infoPlist": {
+        "NSHealthShareUsageDescription": "BodyFitness reads your step count so your daily movement and chosen Circle progress stay up to date.",
+        "NSCameraUsageDescription": "BodyFitness uses the camera to estimate nutrition from a meal photo.",
+        "NSPhotoLibraryUsageDescription": "BodyFitness lets you choose a meal photo for nutrition estimation.",
+        "UIBackgroundModes": [
+          "processing",
+          "remote-notification"
+        ]
+      }
+    },
+    "android": {
+      "package": "app.bodyfitness.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#09090D"
+      },
+      "permissions": [
+        "android.permission.ACTIVITY_RECOGNITION",
+        "android.permission.health.READ_STEPS",
+        "android.permission.POST_NOTIFICATIONS"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "minSdkVersion": 26
+          }
+        }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true,
+          "faceIDPermission": "Allow BodyFitness to protect your signed-in session."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow BodyFitness to photograph meals for nutrition estimates.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow BodyFitness to choose meal photos for nutrition estimates.",
+          "cameraPermission": "Allow BodyFitness to photograph meals for nutrition estimates.",
+          "microphonePermission": false
+        }
+      ],
+      "expo-notifications",
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "BodyFitness reads your step count so your daily movement and chosen Circle progress stay up to date.",
+          "background": true
+        }
+      ],
+      "react-native-health-connect"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
+      }
+    }
+  }
+}

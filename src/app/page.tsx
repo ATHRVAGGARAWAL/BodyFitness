@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, ChevronRight, Droplets, Flame, Footprints, UserRound, Utensils } from "lucide-react";
+import { Check, ChevronRight, Droplets, Flame, Footprints, HeartHandshake, UserRound, Utensils } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ActivityRings } from "@/components/dashboard/activity-rings";
@@ -10,7 +10,6 @@ import { HabitList } from "@/components/dashboard/habit-list";
 import { WaterGauge } from "@/components/dashboard/water-gauge";
 import { LargeTitle } from "@/components/large-title";
 import { MetricEntrySheet } from "@/components/metric-entry-sheet";
-import { SettingsSheet } from "@/components/settings-sheet";
 import { calculateRecoveryInsight, mealTotalsForDate } from "@/lib/calculations";
 import { localDateKey } from "@/lib/date";
 import { demoMeals } from "@/lib/seed";
@@ -23,12 +22,12 @@ export default function DashboardPage() {
   const dailyByDate = useBodyFitnessStore((state) => state.dailyByDate);
   const habits = useBodyFitnessStore((state) => state.habits);
   const flexDays = useBodyFitnessStore((state) => state.flexDays);
+  const circle = useBodyFitnessStore((state) => state.account.circle);
   const setCreatine = useBodyFitnessStore((state) => state.setCreatine);
   const addWater = useBodyFitnessStore((state) => state.addWater);
   const setSteps = useBodyFitnessStore((state) => state.setSteps);
   const toggleHabit = useBodyFitnessStore((state) => state.toggleHabit);
   const toggleFlexDay = useBodyFitnessStore((state) => state.toggleFlexDay);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [stepsOpen, setStepsOpen] = useState(false);
 
   const today = localDateKey();
@@ -56,9 +55,9 @@ export default function DashboardPage() {
         eyebrow={new Intl.DateTimeFormat("en-IN", { weekday: "long", month: "long", day: "numeric" }).format(new Date())}
         title="Command Center"
         action={
-          <button aria-label="Open profile" onClick={() => setSettingsOpen(true)} className="profile-button pressable">
+          <Link aria-label="Open profile" href="/profile" className="profile-button pressable text-inherit">
             <UserRound size={21} strokeWidth={2.25} />
-          </button>
+          </Link>
         }
       />
 
@@ -83,6 +82,8 @@ export default function DashboardPage() {
         onAddWater={() => addWater(250)}
         onEditSteps={() => setStepsOpen(true)}
       />
+
+      <CirclePulse members={circle.members} pendingInvites={circle.pendingInvites} />
 
       <section className="mt-8">
         <SectionHeader index="01" title="Daily protocol" caption="The repeatable actions that compound over time." />
@@ -142,9 +143,23 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <SettingsSheet key={settingsOpen ? "settings-open" : "settings-closed"} open={settingsOpen} onOpenChange={setSettingsOpen} />
       <MetricEntrySheet key={stepsOpen ? "steps-open" : "steps-closed"} open={stepsOpen} onOpenChange={setStepsOpen} title="Today’s steps" value={steps} unit="steps" onSave={setSteps} />
     </main>
+  );
+}
+
+function CirclePulse({ members, pendingInvites }: { members: ReturnType<typeof useBodyFitnessStore.getState>["account"]["circle"]["members"]; pendingInvites: number }) {
+  const active = members.filter((member) => member.summary).slice(0, 3);
+  return (
+    <Link href="/profile/circle" className="panel pressable mt-3 flex min-h-[82px] items-center gap-3 px-4 py-3 text-inherit no-underline">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-[var(--accent-soft)] text-[var(--accent-strong)]"><HeartHandshake size={19} /></span>
+      <div className="min-w-0 flex-1">
+        <p className="m-0 text-sm font-semibold">Circle pulse</p>
+        <p className="mt-1 truncate text-[11px] text-white/38">{active.length ? `${active.length} people shared progress today` : "Invite friends and family to share goals"}</p>
+      </div>
+      {pendingInvites ? <span className="status-chip text-[var(--warning)]">{pendingInvites} pending</span> : null}
+      <ChevronRight size={15} className="text-white/20" />
+    </Link>
   );
 }
 

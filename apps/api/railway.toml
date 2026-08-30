@@ -1,0 +1,10 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "pnpm --filter @bodyfitness/api build"
+
+[deploy]
+preDeployCommand = "pnpm --filter @bodyfitness/api db:migrate"
+startCommand = "pnpm --filter @bodyfitness/api start"
+healthcheckPath = "/health"
+healthcheckTimeout = 20
+restartPolicyType = "ON_FAILURE"

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ChartSpline, Dumbbell, House, ScanLine } from "lucide-react";
+import { ChartSpline, Dumbbell, House, ScanLine, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ const tabs = [
   { href: "/workout", label: "Workout", icon: Dumbbell },
   { href: "/snap-diet", label: "Scan", icon: ScanLine },
   { href: "/progress", label: "Progress", icon: ChartSpline },
+  { href: "/profile", label: "Profile", icon: UserRound },
 ];
 
 export function BottomTabBar() {
@@ -18,7 +19,7 @@ export function BottomTabBar() {
 
   return (
     <motion.nav
-      initial={{ y: 90, opacity: 0, scale: 0.92 }}
+      initial={false}
       animate={{ y: 0, opacity: 1, scale: 1 }}
       exit={{ y: 90, opacity: 0, scale: 0.92 }}
       transition={{ type: "spring", stiffness: 340, damping: 29 }}
@@ -26,7 +27,7 @@ export function BottomTabBar() {
       className="tab-bar fixed bottom-[max(10px,var(--safe-bottom))] left-1/2 z-50 flex w-[calc(min(100%,430px)-24px)] -translate-x-1/2 items-center justify-around px-2 pt-2"
     >
       {tabs.map((tab) => {
-        const active = pathname === tab.href;
+        const active = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
         const Icon = tab.icon;
         return (
           <Link
@@ -34,7 +35,7 @@ export function BottomTabBar() {
             href={tab.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "tab-item relative flex h-[58px] min-w-[76px] flex-col items-center justify-center gap-1 overflow-hidden rounded-[18px] text-[9px] font-bold tracking-[-0.01em] focus:outline-none",
+              "tab-item relative flex h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1 overflow-hidden rounded-[16px] text-[8px] font-bold tracking-[-0.01em] focus:outline-none",
               active && "tab-active",
             )}
           >

@@ -15,10 +15,16 @@ const aiNetworkOnly: RuntimeCaching = {
 
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
-  skipWaiting: true,
+  cacheId: "bodyfitness-v1",
+  precacheOptions: { cleanupOutdatedCaches: true },
+  skipWaiting: false,
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: [aiNetworkOnly, ...defaultCache],
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") void self.skipWaiting();
 });
 
 serwist.addEventListeners();

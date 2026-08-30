@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import {
@@ -14,6 +14,7 @@ import {
 import { BottomTabBar } from "@/components/bottom-tab-bar";
 import { Onboarding } from "@/components/onboarding";
 import { RestTimerPill } from "@/components/rest-timer-pill";
+import { ServiceWorkerManager } from "@/components/service-worker-manager";
 import { useBodyFitnessStore } from "@/lib/store";
 
 interface ChromeContextValue {
@@ -44,9 +45,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (useBodyFitnessStore.persist.hasHydrated()) {
-      useBodyFitnessStore.getState().setHydrated(true);
-    }
+    let cancelled = false;
+    const hydrate = async () => {
+      try {
+        await useBodyFitnessStore.persist.rehydrate();
+      } finally {
+        if (!cancelled) useBodyFitnessStore.getState().setHydrated(true);
+      }
+    };
+    void hydrate();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -76,12 +84,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <ChromeContext.Provider value={context}>
+      <MotionConfig reducedMotion="user">
       <div className={`app-frame ${hydrated && !onboardingComplete ? "h-[100dvh] overflow-hidden" : ""}`}>
         {!hydrated ? (
           <LaunchScreen />
         ) : (
           <>
             <RestTimerPill />
+            <ServiceWorkerManager />
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={pathname}
@@ -116,6 +126,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           )}
         </AnimatePresence>
       </div>
+      </MotionConfig>
     </ChromeContext.Provider>
   );
 }
