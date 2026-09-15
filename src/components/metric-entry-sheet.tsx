@@ -1,8 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Drawer } from "vaul";
+import { Button } from "@/components/ui/button";
+import { Field, Input } from "@/components/ui/input";
+import { Sheet } from "@/components/ui/sheet";
 
+/**
+ * Single-number entry sheet. The parent remounts it when it opens so `draft`
+ * always seeds from the latest value; `handleOpenChange` covers the same path
+ * when the sheet is reused without a remount.
+ */
 export function MetricEntrySheet({
   open,
   onOpenChange,
@@ -23,21 +30,52 @@ export function MetricEntrySheet({
     if (nextOpen) setDraft(value);
     onOpenChange(nextOpen);
   };
+  const save = () => {
+    onSave(draft);
+    onOpenChange(false);
+  };
+
   return (
-    <Drawer.Root open={open} onOpenChange={handleOpenChange} shouldScaleBackground={false}>
-      <Drawer.Portal>
-        <Drawer.Overlay className="sheet-overlay fixed inset-0 z-[90] backdrop-blur-sm" />
-        <Drawer.Content className="sheet-surface fixed bottom-0 left-1/2 z-[95] w-full max-w-[430px] -translate-x-1/2 rounded-t-[28px] px-5 pb-[calc(24px+var(--safe-bottom))] pt-3 outline-none">
-          <div className="sheet-handle mx-auto" />
-          <p className="eyebrow-label mb-0 mt-5 text-center">Metric input</p>
-          <Drawer.Title className="mt-1 text-center text-xl font-black">{title}</Drawer.Title>
-          <div className="relative mx-auto mt-5 max-w-[240px]">
-            <input autoFocus className="ios-field number-font h-20 pr-16 text-center text-[38px] font-bold" type="number" inputMode="numeric" value={draft} onChange={(event) => setDraft(Number(event.target.value))} />
-            <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-white/35">{unit}</span>
-          </div>
-          <button onClick={() => { onSave(draft); onOpenChange(false); }} className="primary-action pressable mt-5 min-h-13 w-full rounded-[15px] text-sm font-black">Save metric</button>
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+    <Sheet.Root open={open} onOpenChange={handleOpenChange} shouldScaleBackground={false}>
+      <Sheet.Content size="sm">
+        <Sheet.Header>
+          <p className="text-xs font-medium uppercase tracking-[0.06em] text-subtle-foreground">Metric input</p>
+          <Sheet.Title className="mt-1">{title}</Sheet.Title>
+          <Sheet.Description>Enter today’s total. It replaces the current value.</Sheet.Description>
+        </Sheet.Header>
+
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            save();
+          }}
+        >
+          <Field label={unit} htmlFor="metric-entry-value">
+            <div className="relative">
+              <Input
+                id="metric-entry-value"
+                autoFocus
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={draft}
+                onChange={(event) => setDraft(Number(event.target.value))}
+                className="h-16 pr-20 text-center text-3xl font-semibold"
+              />
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-subtle-foreground">{unit}</span>
+            </div>
+          </Field>
+
+          <Sheet.Footer>
+            <Button variant="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary">
+              Save {unit}
+            </Button>
+          </Sheet.Footer>
+        </form>
+      </Sheet.Content>
+    </Sheet.Root>
   );
 }

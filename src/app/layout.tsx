@@ -1,15 +1,18 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { fontVariables } from "@/app/fonts";
 import { AppShell } from "@/components/app-shell";
 import { AuthProvider } from "@/components/auth-provider";
 import { CloudSyncBridge } from "@/components/cloud-sync-bridge";
+import { SessionProvider } from "@/components/auth/session-provider";
+import { StateSync } from "@/components/auth/state-sync";
 
 export const metadata: Metadata = {
   title: {
     default: "BodyFitness",
     template: "%s · BodyFitness",
   },
-  description: "A private, local-first body recomposition and fitness tracker.",
+  description: "AI-configured nutrition targets, meal analysis and training tracking. Private and local-first.",
   applicationName: "BodyFitness",
   appleWebApp: {
     capable: true,
@@ -29,7 +32,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#09090d",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fbfbfa" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0b0c" },
+  ],
 };
 
 const themeBootstrap = `
@@ -53,14 +59,17 @@ const themeBootstrap = `
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={fontVariables} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
       </head>
       <body>
         <AuthProvider>
-          {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? <CloudSyncBridge /> : null}
-          <AppShell>{children}</AppShell>
+          {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.NEXT_PUBLIC_API_BASE_URL ? <CloudSyncBridge /> : null}
+          <SessionProvider>
+            <StateSync />
+            <AppShell>{children}</AppShell>
+          </SessionProvider>
         </AuthProvider>
       </body>
     </html>

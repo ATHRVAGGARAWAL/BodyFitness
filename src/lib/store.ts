@@ -13,18 +13,22 @@ import {
 } from "@/lib/seed";
 import type {
   AccountState,
+  AiPlanRecord,
   AppProfile,
+  CoachRecord,
   CircleFeed,
   DailyWellness,
   Habit,
   HealthSource,
   MealEntry,
+  NutritionPlan,
   NutritionTargets,
   PhysiqueWeek,
   RestTimerState,
   SetLog,
   SharingPolicy,
   SyncRecord,
+  TargetsSource,
   ThemePreference,
   UserProfile,
   WeightEntry,
@@ -93,6 +97,9 @@ interface StoreData {
   onboardingComplete: boolean;
   profile: UserProfile;
   targets: NutritionTargets;
+  targetsSource: TargetsSource;
+  aiPlan: AiPlanRecord | null;
+  coach: CoachRecord | null;
   meals: MealEntry[];
   dailyByDate: Record<string, DailyWellness>;
   flexDays: string[];
@@ -115,6 +122,9 @@ interface StoreActions {
   finishOnboarding: (profile: UserProfile) => void;
   updateProfile: (profile: UserProfile) => void;
   recalculateTargets: () => void;
+  applyAiPlan: (plan: NutritionPlan, meta: { model: string; adjustments: string[] }) => void;
+  setCoach: (coach: CoachRecord | null) => void;
+  adjustTargets: (patch: Partial<Pick<NutritionTargets, "calories" | "proteinG">>) => void;
   addMeal: (meal: Omit<MealEntry, "id" | "loggedAt"> & { loggedAt?: string }) => void;
   removeMeal: (id: string) => void;
   toggleFlexDay: (dateKey: string) => void;
@@ -174,6 +184,9 @@ const initialData = (): StoreData => ({
   onboardingComplete: false,
   profile: { ...defaultProfile },
   targets: { ...defaultTargets },
+  targetsSource: "formula",
+  aiPlan: null,
+  coach: null,
   meals: [],
   dailyByDate: {},
   flexDays: [],
@@ -255,14 +268,50 @@ export const useBodyFitnessStore = create<BodyFitnessStore>()(
       setHydrated: (hydrated) => set({ hydrated }),
       setThemePreference: (themePreference) => set({ themePreference }),
       finishOnboarding: (profile) =>
-        set({
+        set((state) => ({
           profile,
-          targets: calculateTargets(profile),
+          // Keep an AI plan the user accepted during onboarding; otherwise fall back to the formula.
+          targets: state.targetsSource === "ai" && state.aiPlan ? state.targets : calculateTargets(profile),
           onboardingComplete: true,
-        }),
+        })),
       updateProfile: (profile) => set({ profile }),
       recalculateTargets: () =>
-        set((state) => ({ targets: calculateTargets(state.profile) })),
+        set((state) => ({ targets: calculateTargets(state.profile), targetsSource: "formula", aiPlan: null })),
+      applyAiPlan: (plan, meta) =>
+        set((state) => ({
+          targets: {
+            bmr: state.targets.bmr,
+            tdee: state.targets.tdee,
+            calories: plan.calories,
+            proteinG: plan.proteinG,
+            carbsG: plan.carbsG,
+            fatG: plan.fatG,
+            fiberG: plan.fiberG,
+            waterMl: plan.waterMl,
+            steps: plan.steps,
+            creatineG: plan.creatineG,
+          },
+          targetsSource: "ai",
+          aiPlan: {
+            generatedAt: new Date().toISOString(),
+            model: meta.model,
+            rationale: plan.rationale,
+            warnings: plan.warnings,
+            adjustments: meta.adjustments,
+            mealSplit: plan.mealSplit,
+            expectedWeeklyChangeKg: plan.expectedWeeklyChangeKg,
+            confidence: plan.confidence,
+          },
+        })),
+      setCoach: (coach) => set({ coach }),
+      adjustTargets: (patch) =>
+        set((state) => {
+          const calories = patch.calories ?? state.targets.calories;
+          const proteinG = patch.proteinG ?? state.targets.proteinG;
+          // Hold fat, re-derive carbohydrate so calories ≈ 4P + 4C + 9F still holds.
+          const carbsG = Math.max(0, Math.round((calories - proteinG * 4 - state.targets.fatG * 9) / 4 / 5) * 5);
+          return { targets: { ...state.targets, calories, proteinG, carbsG } };
+        }),
       addMeal: (meal) =>
         set((state) => ({
           meals: [
@@ -609,7 +658,7 @@ export const useBodyFitnessStore = create<BodyFitnessStore>()(
     }),
     {
       name: "bodyfitness-store",
-      version: 6,
+      version: 7,
       skipHydration: true,
       storage: createJSONStorage(() => localStorage),
       migrate: (persistedState) => {
@@ -625,6 +674,9 @@ export const useBodyFitnessStore = create<BodyFitnessStore>()(
           restDefaults: persisted.restDefaults ?? { compound: 120, isolation: 90 },
           sessions: persisted.sessions ?? [],
           activeSessionId: persisted.activeSessionId ?? null,
+          targetsSource: persisted.targetsSource ?? "formula",
+          aiPlan: persisted.aiPlan ?? null,
+          coach: persisted.coach ?? null,
           themePreference: persisted.themePreference ?? "system",
           account: {
             ...emptyAccount(),

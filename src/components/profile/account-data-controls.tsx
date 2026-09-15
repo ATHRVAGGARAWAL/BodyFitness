@@ -2,11 +2,17 @@
 
 import { useAuth, useUser } from "@clerk/nextjs";
 import { Download, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { deleteCloudAccount } from "@/lib/cloud-sync";
 import { useBodyFitnessStore } from "@/lib/store";
 
 export function AccountDataControls({ enabled }: { enabled: boolean }) {
-  return <div className="mt-3 grid gap-3"><ExportButton />{enabled ? <CloudDeleteButton /> : null}</div>;
+  return (
+    <div className="grid gap-2">
+      <ExportButton />
+      {enabled ? <CloudDeleteButton /> : null}
+    </div>
+  );
 }
 
 function ExportButton() {
@@ -22,7 +28,11 @@ function ExportButton() {
     anchor.click();
     URL.revokeObjectURL(url);
   };
-  return <button onClick={exportData} className="secondary-action pressable flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] text-sm font-bold"><Download size={16} /> Export my data</button>;
+  return (
+    <Button variant="secondary" block onClick={exportData}>
+      <Download /> Export my data
+    </Button>
+  );
 }
 
 function CloudDeleteButton() {
@@ -38,5 +48,14 @@ function CloudDeleteButton() {
     await user?.delete();
     resetAll();
   };
-  return <button onClick={() => void remove().catch((error) => window.alert(error instanceof Error ? error.message : "Account deletion failed."))} className="pressable flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] border border-[color-mix(in_srgb,var(--danger)_25%,transparent)] bg-[color-mix(in_srgb,var(--danger)_9%,transparent)] text-sm font-bold text-[var(--danger)]"><Trash2 size={16} /> Delete cloud account</button>;
+  return (
+    <Button
+      variant="outline"
+      block
+      className="text-destructive hover:text-destructive"
+      onClick={() => void remove().catch((error) => window.alert(error instanceof Error ? error.message : "Account deletion failed."))}
+    >
+      <Trash2 /> Delete cloud account
+    </Button>
+  );
 }

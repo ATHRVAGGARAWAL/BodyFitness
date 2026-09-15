@@ -4,13 +4,19 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Mic, Square, WandSparkles } from "lucide-react";
 import { useRef, useState } from "react";
 import { useAppChrome } from "@/components/app-shell";
+import { Button } from "@/components/ui/button";
+import { usePrefersReducedMotion } from "@/lib/motion";
 import type { VoiceSetParse } from "@/lib/types";
+
+/** `/api/ai/voice-set` answers with the parse on success, or `{ error, code }` on failure. */
+type VoiceSetResponse = Partial<VoiceSetParse> & { error?: string; code?: string };
 
 export function VoiceLogButton({ exerciseName, onParsed }: { exerciseName: string; onParsed: (result: VoiceSetParse) => void }) {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const [state, setState] = useState<"idle" | "recording" | "processing">("idle");
   const { showToast } = useAppChrome();
+  const reduced = usePrefersReducedMotion();
 
   async function start() {
     try {
@@ -45,9 +51,14 @@ export function VoiceLogButton({ exerciseName, onParsed }: { exerciseName: strin
       form.append("audio", new File([blob], "set-log.webm", { type: blob.type }));
       form.append("activeExercise", exerciseName);
       const response = await fetch("/api/ai/voice-set", { method: "POST", body: form });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || "Could not parse that set");
-      onParsed(payload as VoiceSetParse);
+      const payload = (await response.json()) as VoiceSetResponse;
+      if (!response.ok || typeof payload.transcript !== "string") throw new Error(payload.error || "Could not parse that set");
+      onParsed({
+        transcript: payload.transcript,
+        weightKg: payload.weightKg ?? null,
+        reps: payload.reps ?? null,
+        confidence: payload.confidence ?? 0,
+      });
       showToast(`Heard: “${payload.transcript}”`);
     } catch (error) {
       showToast(error instanceof Error ? error.message : "Could not parse that set");
@@ -57,27 +68,30 @@ export function VoiceLogButton({ exerciseName, onParsed }: { exerciseName: strin
   }
 
   return (
-    <button
+    <Button
+      variant="secondary"
+      size="sm"
       aria-label={state === "recording" ? "Stop voice logging" : "Log set by voice"}
       onClick={state === "recording" ? stop : state === "idle" ? start : undefined}
       disabled={state === "processing"}
-      className="relative flex min-h-11 items-center gap-2 overflow-hidden rounded-[13px] border border-[var(--border)] bg-[var(--accent-soft)] px-3 text-xs font-bold text-[var(--accent-strong)] disabled:opacity-70"
+      className="relative shrink-0 overflow-hidden"
     >
       <AnimatePresence>
         {state === "recording" && (
           <motion.span
+            aria-hidden
             initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: [0.18, 0.45, 0.18], scale: [0.95, 1.04, 0.95] }}
+            animate={{ opacity: [0.4, 1, 0.4], scale: [0.95, 1.04, 0.95] }}
             exit={{ opacity: 0, scale: 0.5 }}
-            transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-0 bg-[var(--accent)]"
+            transition={{ duration: 1.2, repeat: reduced ? 0 : Infinity, ease: "easeInOut" }}
+            className="absolute inset-0 bg-brand-soft"
           />
         )}
       </AnimatePresence>
-      <span className="relative flex h-7 w-7 items-center justify-center rounded-[9px] bg-[var(--surface)]">
-        {state === "recording" ? <Square size={11} fill="currentColor" /> : state === "processing" ? <WandSparkles size={15} /> : <Mic size={15} />}
+      <span className="relative flex items-center text-brand">
+        {state === "recording" ? <Square size={11} fill="currentColor" /> : state === "processing" ? <WandSparkles /> : <Mic />}
       </span>
       <span className="relative">{state === "recording" ? "Listening…" : state === "processing" ? "Parsing…" : "Speak set"}</span>
-    </button>
+    </Button>
   );
 }

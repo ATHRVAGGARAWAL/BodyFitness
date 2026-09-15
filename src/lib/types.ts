@@ -19,7 +19,11 @@ export type {
   SyncRecord,
 } from "@bodyfitness/contracts";
 
+export type { CoachInsight, FoodAnalysis as AiFoodAnalysis, NutritionPlan } from "@/lib/ai/schemas";
+
 export type BmrSex = "male" | "female";
+export type FitnessGoal = "fat-loss" | "recomp" | "muscle-gain" | "maintain";
+export type DietPreference = "vegetarian" | "eggetarian" | "non-vegetarian" | "vegan";
 export type OccupationActivity = "seated" | "mixed" | "active" | "manual";
 export type ExerciseType = "compound" | "isolation";
 export type ThemePreference = "system" | "light" | "dark";
@@ -38,6 +42,9 @@ export interface UserProfile {
   sleepHours: number;
   activityMultiplier: number;
   deficitPercent: number;
+  goal?: FitnessGoal;
+  dietPreference?: DietPreference;
+  cuisine?: string;
 }
 
 export interface NutritionTargets {
@@ -50,6 +57,27 @@ export interface NutritionTargets {
   waterMl: number;
   steps: number;
   creatineG: number;
+  fiberG?: number;
+}
+
+export type TargetsSource = "formula" | "ai";
+
+export interface AiPlanRecord {
+  generatedAt: string;
+  model: string;
+  rationale: string[];
+  warnings: string[];
+  adjustments: string[];
+  mealSplit: Array<{ label: string; calories: number; proteinG: number; example: string }>;
+  expectedWeeklyChangeKg: number;
+  confidence: number;
+}
+
+export interface CoachRecord {
+  generatedAt: string;
+  forDate: string;
+  model: string;
+  insight: import("@/lib/ai/schemas").CoachInsight;
 }
 
 export interface FoodItem {
@@ -60,19 +88,28 @@ export interface FoodItem {
   proteinG: number;
   carbsG: number;
   fatG: number;
+  fiberG?: number;
+  portionGrams?: number | null;
+  confidence?: number;
+  cookingNote?: string;
 }
 
+/** Result of a meal analysis after the user has had a chance to edit it. */
 export interface FoodAnalysis {
   name: string;
+  mealType?: "breakfast" | "lunch" | "dinner" | "snack" | "unknown";
   items: FoodItem[];
   totals: {
     calories: number;
     proteinG: number;
     carbsG: number;
     fatG: number;
+    fiberG?: number;
   };
   confidence: number;
   assumptions: string[];
+  warnings?: string[];
+  proteinTip?: string;
 }
 
 export interface MealEntry {

@@ -2,29 +2,18 @@
 
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
+import { fadeRise, T } from "@/lib/motion";
 
-export function LargeTitle({
-  eyebrow,
-  title,
-  action,
-}: {
-  eyebrow?: string;
-  title: string;
-  action?: ReactNode;
-}) {
+export function LargeTitle({ eyebrow, title, action, description }: { eyebrow?: string; title: string; action?: ReactNode; description?: string }) {
   return (
-    <motion.header
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: "spring", stiffness: 360, damping: 30 }}
-      className="mb-7 pt-1"
-    >
-      <div className="flex items-end justify-between gap-4">
+    <motion.header variants={fadeRise} initial="hidden" animate="visible" transition={T.base} className="mb-8 md:mb-10">
+      <div className="flex items-end justify-between gap-6">
         <div className="min-w-0">
-          {eyebrow && <p className="page-kicker m-0">{eyebrow}</p>}
+          {eyebrow ? <p className="page-kicker mb-2">{eyebrow}</p> : null}
           <h1 className="page-title truncate">{title}</h1>
+          {description ? <p className="mt-2 max-w-xl text-base text-muted-foreground">{description}</p> : null}
         </div>
-        {action}
+        {action ? <div className="flex shrink-0 items-center gap-2 pb-1">{action}</div> : null}
       </div>
     </motion.header>
   );

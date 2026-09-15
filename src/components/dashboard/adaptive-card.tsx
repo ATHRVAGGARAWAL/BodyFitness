@@ -1,8 +1,14 @@
 "use client";
 
-import { ArrowDownRight, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, DataTile } from "@/components/ui/card";
 import type { RecoveryInsight } from "@/lib/calculations";
-import { formatNumber } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
+
+/** Days of prior logging required before an average is worth showing. */
+const MIN_LOGGED_DAYS = 4;
 
 export function AdaptiveCard({
   insight,
@@ -18,50 +24,65 @@ export function AdaptiveCard({
   onToggleFlexDay: () => void;
 }) {
   const onTrack = insight.averageCalories === 0 || insight.variance <= 0;
+  const enough = insight.loggedDays >= MIN_LOGGED_DAYS;
+
   return (
-    <section className="panel p-4">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-2">
-          <span className="icon-tile text-[var(--accent-strong)]">
-            <Sparkles size={17} />
-          </span>
-          <div>
-            <p className="m-0 text-sm font-semibold">7-day calorie trend</p>
-            <p className="mt-0.5 text-[10px] text-white/35">{demo ? "Sample insight" : `${insight.loggedDays}/6 prior days logged`}</p>
-          </div>
+    <Card>
+      <CardHeader>
+        <div>
+          <CardTitle>7-day calorie trend</CardTitle>
+          <CardDescription>
+            {demo ? "How your week compares with a " : `${insight.loggedDays}/6 prior days logged against a `}
+            <span className="number-font">{formatNumber(target)}</span> kcal target
+          </CardDescription>
         </div>
-        <span className={`status-chip ${onTrack ? "text-[var(--success)]" : "text-[var(--warning)]"}`}>
-          {onTrack ? "On track" : "Above plan"}
-        </span>
-      </div>
+        <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
+          {demo ? <Badge>Sample data</Badge> : null}
+          {enough ? <Badge variant={onTrack ? "success" : "warning"}>{onTrack ? "On track" : "Above plan"}</Badge> : <Badge variant="outline">Collecting</Badge>}
+        </div>
+      </CardHeader>
 
-      <div className="mt-5 grid grid-cols-2 gap-3">
-        <div className="data-tile p-3">
-          <p className="m-0 text-[10px] font-semibold text-white/35">Average</p>
-          <p className="number-font mb-0 mt-1 text-[23px] font-bold">{formatNumber(insight.averageCalories || target - 74)}</p>
-          <p className="m-0 text-[10px] text-white/28">kcal / logged day</p>
+      <CardContent>
+        <div className="grid grid-cols-2 gap-3">
+          <DataTile>
+            <p className="text-xs font-medium uppercase tracking-[0.06em] text-subtle-foreground">Average</p>
+            <p className="number-font mt-1 text-2xl font-semibold leading-none">
+              {enough ? formatNumber(insight.averageCalories) : "—"}
+              {enough ? <span className="ml-1 text-xs font-medium tracking-normal text-subtle-foreground">kcal</span> : null}
+            </p>
+            <p className="mt-1.5 text-xs text-muted-foreground">{enough ? "per logged day" : `Log ${MIN_LOGGED_DAYS}+ days to see a trend`}</p>
+          </DataTile>
+          <DataTile>
+            <p className="text-xs font-medium uppercase tracking-[0.06em] text-subtle-foreground">vs target</p>
+            <p className={cn("number-font mt-1 flex items-center gap-1 text-2xl font-semibold leading-none", enough && (onTrack ? "text-success" : "text-warning"))}>
+              {enough ? (
+                <>
+                  {onTrack ? <ArrowDownRight size={18} aria-label="Below target" /> : <ArrowUpRight size={18} aria-label="Above target" />}
+                  {formatNumber(Math.abs(insight.variance))}
+                  <span className="text-xs font-medium tracking-normal text-subtle-foreground">kcal</span>
+                </>
+              ) : (
+                "—"
+              )}
+            </p>
+            <p className="mt-1.5 text-xs text-muted-foreground">{enough ? "daily variance" : "Not enough days yet"}</p>
+          </DataTile>
         </div>
-        <div className="data-tile p-3">
-          <p className="m-0 text-[10px] font-semibold text-white/35">vs target</p>
-          <p className={`number-font mb-0 mt-1 flex items-center gap-1 text-[23px] font-bold ${onTrack ? "text-[var(--success)]" : "text-[var(--warning)]"}`}>
-            {onTrack ? <ArrowDownRight size={18} /> : <ArrowRight size={18} />}
-            {formatNumber(Math.abs(insight.variance || -74))}
-          </p>
-          <p className="m-0 text-[10px] text-white/28">kcal daily variance</p>
-        </div>
-      </div>
 
-      <div className="mt-3 rounded-[14px] border border-[var(--border)] bg-[var(--accent-soft)] px-3 py-2.5 text-[12px] leading-4 text-white/52">
-        {insight.suggestedLow && insight.suggestedHigh
-          ? `Optional recovery range: ${formatNumber(insight.suggestedLow)}–${formatNumber(insight.suggestedHigh)} kcal. Your official target stays unchanged.`
-          : "Stay close to your normal target. One high day never calls for a crash diet."}
-      </div>
-      <button
-        onClick={onToggleFlexDay}
-        className={`pressable mt-3 min-h-11 w-full rounded-[13px] border text-xs font-bold ${isFlexDay ? "border-[var(--warning)] bg-[var(--warning)] text-black" : "border-[var(--border)] bg-[var(--fill)] text-white/48"}`}
-      >
-        {isFlexDay ? "Flex Day marked" : "Mark today as a Flex Day"}
-      </button>
-    </section>
+        <p className="mt-4 rounded-lg border border-border bg-muted px-4 py-3 text-sm leading-relaxed text-muted-foreground">
+          {insight.suggestedLow && insight.suggestedHigh ? (
+            <>
+              Optional recovery range: <span className="number-font font-medium text-foreground">{formatNumber(insight.suggestedLow)}–{formatNumber(insight.suggestedHigh)} kcal</span>. Your official target stays unchanged.
+            </>
+          ) : (
+            "Stay close to your normal target. One high day never calls for a crash diet."
+          )}
+        </p>
+
+        <Button variant={isFlexDay ? "primary" : "outline"} block className="mt-4" aria-pressed={isFlexDay} onClick={onToggleFlexDay}>
+          {isFlexDay ? "Flex day marked" : "Mark today as a flex day"}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

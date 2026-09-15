@@ -1,70 +1,47 @@
-# Deployment and native release
+# Deployment
 
-## Vercel PWA
+## 1. Vercel — web app
 
-Deploy the repository root. Configure `OPENAI_API_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, and `NEXT_PUBLIC_API_BASE_URL`. Add the production Vercel origin to the API `ALLOWED_ORIGINS` list and to Clerk’s allowed origins/redirects.
+1. Import the repository. Framework preset: Next.js. Root directory: repository root. `vercel.json` already sets the install command to `pnpm install --filter bodyfitness... --frozen-lockfile`, so the Expo and API workspaces are not installed.
+2. Node 22+ (the `engines` field enforces it). Vercel uses corepack for `pnpm@11.19.0` from `packageManager`.
+3. Environment variables (Production + Preview):
 
-The service worker uses versioned precaches and waits for explicit activation. Verify fresh install, Add to Home Screen, offline launch, and the in-app update/reload prompt before each release.
+   | Variable | Value |
+   |---|---|
+   | `AI_API_KEY` | Azure AI Foundry key for the `satvikxs-8248-resource` resource |
+   | `AZURE_AI_RESOURCE` | `satvikxs-8248-resource` |
+   | `AI_MODEL` | `gpt-5.6-sol` |
+   | `AI_SERVICE_TIER` | `priority` (optional; Codex calls this "fast") |
+   | `AI_EFFORT_ANALYSIS` / `AI_EFFORT_COACH` / `AI_EFFORT_FAST` | `medium` / `high` / `low` (optional) |
+   | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` | only if enabling accounts |
+   | `NEXT_PUBLIC_API_BASE_URL` | Railway API URL, only if enabling cloud sync |
 
-## Railway API and Postgres
+4. **Accounts and saved data**: set `DATABASE_URL` to any hosted Postgres (Railway Postgres, Neon, Supabase). Tables are created automatically on first use (`app_users`, `app_sessions`, `app_state`). Without it the app runs device-only and `/login` explains that accounts are off.
+5. AI routes export `maxDuration = 60`; keep the project on Fluid Compute so long reasoning calls are not cut off.
+6. After the first deploy, open `/api/health` — it must report `ai.configured: true` with the expected model and provider.
+7. Add the production origin to Azure AI Foundry's allowed origins only if you enable browser-side calls (the app does not; all calls are server-side).
 
-Create a Railway Postgres service and deploy the repository with `apps/api/railway.toml`. Required variables:
+The local Codex proxy on `:8777` is **not** needed: it only patches a Codex CLI quirk. The app calls `https://<resource>.services.ai.azure.com/openai/v1` directly with a Bearer key.
 
-- `DATABASE_URL`
-- `CLERK_SECRET_KEY`
-- `WEB_APP_URL`, for generated invitation links
-- `ALLOWED_ORIGINS`, a comma-separated web-origin allowlist
+## 2. Railway — cloud API (optional)
 
-Railway runs Drizzle migrations before deploy and checks `/health`. The production server refuses to start without `DATABASE_URL`.
+Deploy `apps/api` with `apps/api/railway.toml` (Nixpacks; migrations run pre-deploy; healthcheck `/health`). Variables: `DATABASE_URL`, `CLERK_SECRET_KEY`, `WEB_APP_URL` (the Vercel origin), `ALLOWED_ORIGINS` (comma-separated, include Vercel production and preview origins). Point the web app at it with `NEXT_PUBLIC_API_BASE_URL`.
 
-Use a dedicated database role. The migration enables row-level security on user, step, summary, achievement, connection, sharing, invitation, device, and report tables; the API also performs explicit connection checks and immediate revocation.
+The API does not call the model; AI stays inside the Next.js server so one key and one rate limiter govern it.
 
-## Clerk
+## 3. Clerk (optional)
 
-Enable Apple, Google, and email-link authentication. Configure:
+Enable Apple, Google and email-link sign-in. Register the Vercel production and preview origins and, if the mobile app is revived, the `bodyfitness://auth` redirect.
 
-- Web production and preview origins
-- Native scheme `bodyfitness://`
-- Redirect path `bodyfitness://auth`
-- Apple service/app identifiers and Google OAuth credentials
+## 4. Release checklist
 
-Set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` for the PWA, `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` for EAS builds, and `CLERK_SECRET_KEY` only on Railway.
+- `pnpm verify` green locally.
+- `/api/health` returns the intended model in production.
+- Log a meal by text, by photo, run "Configure with AI" from Profile, and "Run review" from Home on the production URL.
+- Theme flash: set `localStorage["bodyfitness-store"]` to `{"state":{"themePreference":"light"}}`, hard reload, no dark flash; repeat with `"dark"`.
+- Check 390, 768, 1024 and 1280 px widths, both themes, and reduced motion.
+- Installed PWA rotates on tablets (`orientation: any`) and safe-area insets still apply.
 
-## Expo and EAS
+## 5. Privacy and compliance
 
-From `apps/mobile`, run `eas init` so EAS replaces `REPLACE_WITH_EAS_PROJECT_ID` in `app.json`. Set build variables for `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`, `EXPO_PUBLIC_API_URL`, and `EXPO_PUBLIC_WEB_URL`.
-
-```bash
-pnpm --filter @bodyfitness/mobile prebuild
-eas build --profile development --platform all
-eas build --profile preview --platform android
-eas build --profile production --platform all
-```
-
-Test Clerk deep links and private invite links on physical devices. Background health refresh is best effort: both operating systems choose execution windows, so the UI must never claim continuous real-time tracking.
-
-## Apple Health
-
-The Expo config enables the HealthKit entitlement and supplies a read-purpose string. In App Store Connect:
-
-- Confirm the App ID has HealthKit enabled.
-- Explain that only step count is read.
-- Confirm health data is used for the user’s fitness tracking and opt-in Circle summaries, never advertising.
-- Test denied and revoked access, locked-device/protected-data behavior, timezone changes, and background limitations on a physical iPhone.
-
-## Android Health Connect
-
-The Android build targets SDK 36, supports Android 8+, and declares read-only Steps access. Health Connect may require installation/update on Android 8–13 and is part of the framework on Android 14+.
-
-Before Google Play release, complete the Health apps declaration in Play Console for `READ_STEPS`, publish the matching privacy-policy disclosures, and allow time for approval/whitelist propagation. Test missing/outdated Health Connect, denied/revoked permission, duplicate data origins, timezone changes, and background restrictions on physical devices.
-
-## Privacy and release gate
-
-- Keep every account private and every connection mutual.
-- Birth date is private and only enforces age 13+.
-- Users aged 13–17 receive the same controls without guardian features.
-- Blocking/removal must revoke access immediately.
-- Physique photos stay device-local.
-- Account deletion must remove cloud profile, connections, steps, logs, achievements, and registered devices.
-
-Public release is blocked until counsel/product owners complete global youth-privacy, health-data, retention/deletion, abuse-reporting, App Store, and Google Play compliance review. This review is a release gate, not a guardian-control feature.
+Accounts are private, connections mutual, birth date only enforces 13+, physique photos stay on device, and account deletion removes cloud profile, connections, steps, logs, achievements and devices. Meal photos are sent to the model for analysis and are not stored server-side. Public release still requires the youth-privacy, health-data, retention/deletion, abuse-reporting and store compliance review noted by product owners.

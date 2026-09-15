@@ -52,16 +52,13 @@ export function ServiceWorkerManager() {
 
   if (!waiting) return null;
   return (
-    <div className="glass fixed bottom-[calc(88px+var(--safe-bottom))] left-1/2 z-[80] flex w-[calc(min(100%,430px)-32px)] -translate-x-1/2 items-center gap-3 rounded-[18px] p-3">
-      <span className="icon-tile text-[var(--accent-strong)]"><RefreshCw size={17} /></span>
+    <div role="status" className="overlay-frame bottom-[calc(var(--dock-height)+24px+var(--safe-bottom))] z-[80] flex items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-[var(--shadow-sheet)]">
+      <span className="icon-tile"><RefreshCw size={16} /></span>
       <div className="min-w-0 flex-1">
-        <p className="m-0 text-xs font-black">Update ready</p>
-        <p className="mt-1 text-[10px] text-white/38">Reload for the latest BodyFitness build.</p>
+        <p className="text-sm font-medium">Update ready</p>
+        <p className="text-xs text-muted-foreground">Reload for the latest BodyFitness build.</p>
       </div>
-      <button
-        className="primary-action pressable min-h-11 rounded-[12px] px-3 text-[10px] font-black"
-        onClick={() => waiting.postMessage({ type: "SKIP_WAITING" })}
-      >
+      <button className="primary-action pressable" onClick={() => waiting.postMessage({ type: "SKIP_WAITING" })}>
         Reload
       </button>
     </div>

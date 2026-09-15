@@ -2,6 +2,7 @@
 
 import { Download, Share } from "lucide-react";
 import { useSyncExternalStore } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const noopSubscribe = () => () => undefined;
 
@@ -17,17 +18,22 @@ export function PwaInstallCard() {
 
   if (standalone) return null;
   return (
-    <div className="panel p-4">
-      <div className="flex items-start gap-3">
-        <span className="icon-tile text-[var(--steps)]"><Download size={18} /></span>
-        <div>
-          <p className="m-0 text-sm font-black">Install the web app</p>
-          <p className="mt-1 text-[11px] leading-4 text-white/40">
+    <Card>
+      <CardHeader>
+        <div className="min-w-0">
+          <CardTitle>Install the web app</CardTitle>
+          <CardDescription>
             {ios ? "In Safari, tap Share and then Add to Home Screen for the full-screen iPhone experience." : "Install BodyFitness from your browser menu for faster launch and offline access."}
-          </p>
+          </CardDescription>
         </div>
-      </div>
-      {ios ? <div className="mt-3 flex items-center gap-2 rounded-[13px] bg-[var(--surface-soft)] p-3 text-[10px] font-bold text-white/50"><Share size={15} /> Share → Add to Home Screen</div> : null}
-    </div>
+        <span className="icon-tile"><Download size={16} aria-hidden="true" /></span>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2.5 text-sm text-muted-foreground">
+          <Share size={14} aria-hidden="true" />
+          {ios ? "Share → Add to Home Screen" : "Browser menu → Install app"}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

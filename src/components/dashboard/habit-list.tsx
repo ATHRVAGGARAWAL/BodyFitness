@@ -1,10 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, ChevronRight } from "lucide-react";
+import { Check } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { reduceable, T, usePrefersReducedMotion } from "@/lib/motion";
 import type { Habit } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
+/** Daily habits. Swipe a row right (or tap it) to toggle completion. */
 export function HabitList({
   habits,
   completedIds,
@@ -14,21 +18,27 @@ export function HabitList({
   completedIds: string[];
   onToggle: (id: string) => void;
 }) {
+  const reduced = usePrefersReducedMotion();
+  const fillTransition = reduceable(T.base, reduced);
+
   return (
-    <div className="panel overflow-hidden">
-      <div className="px-4 pb-2 pt-4">
-        <div className="flex items-center justify-between gap-3">
-          <div><p className="m-0 text-[15px] font-bold tracking-[-0.025em]">Mess protocol</p><p className="mt-1 text-[11px] text-white/35">Swipe or tap to resolve</p></div>
-          <span className="status-chip">{completedIds.length}/{habits.length}</span>
+    <Card className="overflow-hidden">
+      <CardHeader className="items-center pb-4">
+        <div>
+          <CardTitle>Mess protocol</CardTitle>
+          <CardDescription>Swipe or tap to resolve</CardDescription>
         </div>
-      </div>
-      <div>
+        <Badge className="number-font shrink-0">
+          {completedIds.length}/{habits.length}
+        </Badge>
+      </CardHeader>
+      <div className="border-t border-border">
         {habits.map((habit, index) => {
           const complete = completedIds.includes(habit.id);
           return (
             <div key={habit.id} className="relative overflow-hidden">
-              <div className="absolute inset-0 flex items-center bg-[var(--success)] pl-5 text-black">
-                <Check size={20} strokeWidth={3} />
+              <div aria-hidden="true" className="absolute inset-0 flex items-center bg-muted pl-6 text-success">
+                <Check size={18} strokeWidth={2.5} />
               </div>
               <motion.button
                 drag="x"
@@ -39,32 +49,36 @@ export function HabitList({
                 }}
                 onClick={() => onToggle(habit.id)}
                 whileTap={{ scale: 0.99 }}
+                aria-pressed={complete}
                 className={cn(
-                  "surface-row relative flex min-h-[56px] w-full items-center gap-3 px-4 text-left",
-                  index < habits.length - 1 && "hairline",
+                  "relative flex min-h-14 w-full items-center gap-3 bg-card px-5 text-left hover:bg-accent",
+                  index < habits.length - 1 && "border-b border-border",
                 )}
               >
-                <motion.span
-                  animate={{ backgroundColor: complete ? "var(--success)" : "var(--fill)" }}
-                  className="flex h-[25px] w-[25px] shrink-0 items-center justify-center rounded-[8px] ring-1 ring-white/15"
-                >
+                <span className="relative flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-muted">
+                  <motion.span
+                    aria-hidden="true"
+                    initial={false}
+                    animate={{ opacity: complete ? 1 : 0 }}
+                    transition={fillTransition}
+                    className="absolute inset-0 bg-primary"
+                  />
                   <AnimateCheck visible={complete} />
-                </motion.span>
-                <span className={cn("flex-1 text-[13px] font-medium", complete && "text-white/35 line-through")}>{habit.label}</span>
-                <ChevronRight size={15} className="text-white/18" />
+                </span>
+                <span className={cn("flex-1 text-base font-medium", complete && "text-subtle-foreground line-through")}>{habit.label}</span>
               </motion.button>
             </div>
           );
         })}
       </div>
-    </div>
+    </Card>
   );
 }
 
 function AnimateCheck({ visible }: { visible: boolean }) {
   return (
-    <motion.span initial={false} animate={{ scale: visible ? 1 : 0, opacity: visible ? 1 : 0 }}>
-      <Check size={15} strokeWidth={3.2} className="text-black" />
+    <motion.span initial={false} animate={{ scale: visible ? 1 : 0, opacity: visible ? 1 : 0 }} className="relative">
+      <Check size={14} strokeWidth={2.5} className="text-primary-foreground" />
     </motion.span>
   );
 }

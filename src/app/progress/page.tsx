@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, Camera, ChevronDown, Plus, Scale, Sparkles, TrendingUp } from "lucide-react";
+import { Camera, Plus, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useAppChrome } from "@/components/app-shell";
 import { LargeTitle } from "@/components/large-title";
@@ -8,6 +8,11 @@ import { MetricEntrySheet } from "@/components/metric-entry-sheet";
 import { AddPhysiqueSheet } from "@/components/progress/add-physique-sheet";
 import { PhysiqueGallery } from "@/components/progress/physique-gallery";
 import { ProgressChart } from "@/components/progress/progress-chart";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Field, Select } from "@/components/ui/input";
+import { SectionHeader, Stat } from "@/components/ui/section-header";
 import { demoProgress } from "@/lib/seed";
 import { useBodyFitnessStore } from "@/lib/store";
 import {
@@ -17,6 +22,7 @@ import {
   formatDelta,
   strengthDeltaPercent,
   weightDelta,
+  type Delta,
 } from "@/lib/training-metrics";
 
 export default function ProgressPage() {
@@ -55,64 +61,107 @@ export default function ProgressPage() {
 
   return (
     <main className="page-shell">
-      <LargeTitle eyebrow="Longitudinal body data" title="Progress Lab" action={<button aria-label="Add body weight" onClick={() => setWeightOpen(true)} className="profile-button pressable"><Plus size={19} /></button>} />
+      <LargeTitle
+        eyebrow="Longitudinal body data"
+        title="Progress"
+        description="Body mass against strength, week by week. Gaps stay gaps."
+        action={<Button variant="secondary" onClick={() => setWeightOpen(true)}><Plus /> Log weight</Button>}
+      />
 
-      <section>
-        <div className="mb-3 flex items-end justify-between px-1">
-          <div><div className="mb-1 flex items-center gap-2"><span className="section-index">01</span><span className="section-rule" /></div><h2 className="section-title">Body × strength</h2><p className="section-caption">12-week signal with weekly smoothing.</p></div>
-          {usingDemo && <span className="status-chip">Sample data</span>}
-        </div>
-        <div className="relative mb-3">
-          <select aria-label="Select strength lift" value={selectedLift?.id} onChange={(event) => setSelectedLiftId(event.target.value)} className="ios-field h-12 appearance-none pr-10 text-xs font-bold">
-            {compoundLifts.map((lift) => <option key={lift.id} value={lift.id}>{lift.name} · estimated 1RM</option>)}
-          </select>
-          <ChevronDown size={15} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-white/35" />
-        </div>
-        <ProgressChart data={chartData} />
-      </section>
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        <div className="min-w-0">
+          <section>
+            <SectionHeader index="01" title="Body × strength" caption="Twelve weeks. Weekly average body mass and best estimated 1RM." action={usingDemo ? <Badge>Sample data</Badge> : null} />
+            <ProgressChart data={chartData} liftName={selectedLift?.name} />
 
-      <div className="mt-3 grid grid-cols-2 gap-3">
-        <Stat
-          icon={<Scale size={18} />}
-          label="Body mass"
-          value={latestWeight.toFixed(1)}
-          unit="kg"
-          change={formatDelta(massDelta, " kg")}
-          hint="Log twice to see a trend"
-          color="var(--steps)"
-        />
-        <Stat
-          icon={<TrendingUp size={18} />}
-          label={`${selectedLift?.name ?? "Lift"} e1RM`}
-          value={latestStrength ? latestStrength.toFixed(1) : "—"}
-          unit={latestStrength ? "kg" : ""}
-          change={formatDelta(strengthDelta, "%")}
-          hint="Train it twice to see a trend"
-          color="var(--accent-strong)"
-        />
+            <Card className="mt-4">
+              <CardContent className="grid grid-cols-2 gap-x-4 gap-y-6 pt-5 sm:grid-cols-4">
+                <Stat
+                  label="Body mass"
+                  value={latestWeight.toFixed(1)}
+                  unit="kg"
+                  hint={weightEntries[0] ? "Latest entry" : "From your profile"}
+                />
+                <Stat
+                  label={`${selectedLift?.name ?? "Lift"} e1RM`}
+                  value={latestStrength ? latestStrength.toFixed(1) : "—"}
+                  unit={latestStrength ? "kg" : undefined}
+                  tone={latestStrength ? "brand" : "default"}
+                  hint={latestStrength ? "Best logged set" : "Log a set of this lift"}
+                />
+                <DeltaStat label="Mass change" delta={massDelta} unit="kg" formatted={formatDelta(massDelta, " kg")} emptyHint="Log twice to see a trend" />
+                <DeltaStat label="Strength change" delta={strengthDelta} unit="%" formatted={formatDelta(strengthDelta, "%")} emptyHint="Train it twice to see a trend" />
+              </CardContent>
+            </Card>
+          </section>
+
+          <section className="mt-10">
+            <SectionHeader
+              index="02"
+              title="Physique timeline"
+              caption="Repeatable angles. Honest comparison."
+              action={<Button variant="secondary" size="sm" onClick={() => setPhysiqueOpen(true)} aria-label="Add physique check-in"><Camera /> Add check-in</Button>}
+            />
+            <PhysiqueGallery entries={physiqueWeeks} onAdd={() => setPhysiqueOpen(true)} />
+          </section>
+        </div>
+
+        <aside className="flex flex-col gap-4 lg:sticky lg:top-8 lg:self-start">
+          <Card>
+            <CardHeader>
+              <div>
+                <CardTitle>Strength series</CardTitle>
+                <CardDescription>The compound lift drawn in the chart and used for the strength signal.</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Field label="Lift">
+                <Select aria-label="Select strength lift" value={selectedLift?.id ?? ""} onChange={(event) => setSelectedLiftId(event.target.value)} disabled={!compoundLifts.length}>
+                  {compoundLifts.length ? compoundLifts.map((lift) => <option key={lift.id} value={lift.id}>{lift.name}</option>) : <option value="">No compound lifts in your plan</option>}
+                </Select>
+              </Field>
+            </CardContent>
+          </Card>
+
+          {shouldRecalculate && (
+            <Card>
+              <CardHeader>
+                <div>
+                  <CardTitle className="flex items-center gap-2"><Sparkles size={16} className="text-brand" /> Target review</CardTitle>
+                  <CardDescription>
+                    Your weight moved at least 2% from the value your targets were built on. Recalculate using <span className="number-font text-foreground">{latestWeight.toFixed(1)}</span> kg?
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Button variant="primary" block onClick={() => { finishOnboarding({ ...profile, currentWeightKg: latestWeight }); showToast("Targets recalculated"); }}>Recalculate targets</Button>
+              </CardContent>
+            </Card>
+          )}
+
+          <Card>
+            <CardHeader>
+              <div>
+                <CardTitle>Body signal</CardTitle>
+                <CardDescription>Direction of body mass read against direction of strength.</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {signal ? (
+                <>
+                  <p className="text-base font-medium">{bodySignalCopy[signal].title}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{bodySignalCopy[signal].detail}</p>
+                </>
+              ) : (
+                <>
+                  <p className="number-font text-3xl font-semibold leading-none text-muted-foreground">—</p>
+                  <p className="mt-2 text-xs text-muted-foreground">Needs two weigh-ins and two sessions of the selected lift.</p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </aside>
       </div>
-
-      {shouldRecalculate && (
-        <div className="panel mt-3 p-4">
-          <div className="flex gap-3"><span className="icon-tile text-[var(--warning)]"><Sparkles size={18} /></span><div><p className="m-0 text-sm font-bold">Target review available</p><p className="mt-1 text-[11px] leading-4 text-white/40">Your weight changed by at least 2%. Recalculate using {latestWeight.toFixed(1)} kg?</p></div></div>
-          <button onClick={() => { finishOnboarding({ ...profile, currentWeightKg: latestWeight }); showToast("Targets recalculated"); }} className="primary-action pressable mt-3 min-h-11 w-full rounded-[13px] text-xs font-black">Recalculate targets</button>
-        </div>
-      )}
-
-      <section className="mt-8">
-        <div className="mb-3 flex items-end justify-between px-1">
-          <div><div className="mb-1 flex items-center gap-2"><span className="section-index">02</span><span className="section-rule" /></div><h2 className="section-title">Physique timeline</h2><p className="section-caption">Repeatable angles. Honest comparison.</p></div>
-          <button onClick={() => setPhysiqueOpen(true)} className="icon-button pressable" aria-label="Add physique check-in"><Camera size={17} /></button>
-        </div>
-        <PhysiqueGallery entries={physiqueWeeks} onAdd={() => setPhysiqueOpen(true)} />
-      </section>
-
-      {signal && (
-        <div className="panel mt-4 flex min-h-[72px] items-center gap-3 px-4">
-          <span className="icon-tile text-[var(--protein)]"><Activity size={18} /></span>
-          <div><p className="m-0 text-sm font-bold">{bodySignalCopy[signal].title}</p><p className="mt-1 text-[10px] text-white/32">{bodySignalCopy[signal].detail}</p></div>
-        </div>
-      )}
 
       <MetricEntrySheet open={weightOpen} onOpenChange={setWeightOpen} title="Log body weight" value={latestWeight} unit="kg" onSave={(weight) => { addWeightEntry(weight); showToast("Weight logged"); }} />
       <AddPhysiqueSheet key={physiqueOpen ? "physique-open" : "physique-closed"} open={physiqueOpen} onOpenChange={setPhysiqueOpen} />
@@ -120,6 +169,11 @@ export default function ProgressPage() {
   );
 }
 
-function Stat({ icon, label, value, unit, change, hint, color }: { icon: React.ReactNode; label: string; value: string; unit: string; change: string | null; hint: string; color: string }) {
-  return <div className="panel p-4"><span className="icon-tile" style={{ color }}>{icon}</span><p className="mb-1 mt-4 text-[9px] font-black uppercase tracking-[0.07em] text-white/30">{label}</p><p className="number-font m-0 text-[26px] font-black">{value}{unit && <span className="ml-1 text-[9px] tracking-normal text-white/28">{unit}</span>}</p>{change ? <p className="mt-1 text-[9px] font-bold" style={{ color }}>{change}</p> : <p className="mt-1 text-[9px] font-semibold text-white/25">{hint}</p>}</div>;
+/** Signed change with its span; an honest dash and hint until two measurements exist. */
+function DeltaStat({ label, delta, unit, formatted, emptyHint }: { label: string; delta: Delta; unit: string; formatted: string | null; emptyHint: string }) {
+  if (delta.value === null || !formatted) {
+    return <Stat label={label} value="—" tone="muted" hint={emptyHint} />;
+  }
+  const sign = delta.value > 0 ? "+" : delta.value < 0 ? "−" : "";
+  return <Stat label={label} value={`${sign}${Math.abs(delta.value)}`} unit={unit} hint={`Over ${formatted.split(" / ")[1] ?? formatted}`} />;
 }

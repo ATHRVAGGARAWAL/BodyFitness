@@ -8,7 +8,7 @@ declare const self: ServiceWorkerGlobalScope & {
 };
 
 const aiNetworkOnly: RuntimeCaching = {
-  matcher: ({ sameOrigin, url }) => sameOrigin && url.pathname.startsWith("/api/ai/"),
+  matcher: ({ sameOrigin, url }) => sameOrigin && url.pathname.startsWith("/api/"),
   method: "POST",
   handler: new NetworkOnly({ networkTimeoutSeconds: 50 }),
 };

@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   transpilePackages: ["@bodyfitness/contracts", "@bodyfitness/core"],
+  async redirects() {
+    return [{ source: "/snap-diet", destination: "/nutrition", permanent: true }];
+  },
   async headers() {
     return [
       {

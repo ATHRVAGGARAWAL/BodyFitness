@@ -1,50 +1,42 @@
-import OpenAI from "openai";
-import { zodTextFormat } from "openai/helpers/zod";
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import { VOICE_SET_INSTRUCTIONS } from "@/lib/ai/prompts";
+import { VoiceSetSchema } from "@/lib/ai/schemas";
+import { AiError, enforceRateLimit, getClient, jsonError, jsonOk, requireApiKeyOrThrow, structured } from "@/lib/ai/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
-const VoiceSetSchema = z.object({
-  weightKg: z.number().nonnegative().nullable(),
-  reps: z.number().int().nonnegative().nullable(),
-  confidence: z.number().min(0).max(1),
-});
-
-const allowedTypes = new Set(["audio/webm", "audio/mp4", "audio/mpeg", "audio/wav", "audio/ogg", "audio/x-m4a"]);
+const allowedTypes = new Set(["audio/webm", "audio/mp4", "audio/mpeg", "audio/wav", "audio/ogg", "audio/x-m4a", "audio/m4a"]);
 
 export async function POST(request: Request) {
-  if (!process.env.OPENAI_API_KEY) {
-    return NextResponse.json({ error: "Add OPENAI_API_KEY to enable voice logging." }, { status: 503 });
-  }
-
   try {
+    requireApiKeyOrThrow();
+    enforceRateLimit(request, "voice", 30);
+
     const form = await request.formData();
     const audio = form.get("audio");
-    const activeExercise = String(form.get("activeExercise") || "the active exercise");
-    if (!(audio instanceof File)) {
-      return NextResponse.json({ error: "An audio recording is required." }, { status: 400 });
-    }
-    if (!allowedTypes.has(audio.type) || audio.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: "Use a supported recording under 10 MB." }, { status: 400 });
-    }
+    const activeExercise = String(form.get("activeExercise") || "the active exercise").slice(0, 80);
+    if (!(audio instanceof File) || audio.size === 0) throw new AiError("An audio recording is required.", 400, "empty_input");
+    const baseType = audio.type.split(";")[0];
+    if (!allowedTypes.has(baseType)) throw new AiError("Unsupported audio format.", 400, "bad_type");
+    if (audio.size > 10 * 1024 * 1024) throw new AiError("Recordings must be under 10 MB.", 400, "too_large");
 
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 45_000 });
-    const transcription = await client.audio.transcriptions.create({
-      file: audio,
-      model: process.env.OPENAI_TRANSCRIBE_MODEL || "gpt-transcribe",
+    const { client, config } = getClient();
+    const transcription = await client.audio.transcriptions.create({ file: audio, model: config.transcribeModel });
+    const transcript = transcription.text.trim();
+    if (!transcript) throw new AiError("Nothing was heard. Try again closer to the microphone.", 422, "silent");
+
+    const parsed = await structured({
+      schema: VoiceSetSchema,
+      schemaName: "voice_set",
+      instructions: VOICE_SET_INSTRUCTIONS,
+      input: `Active exercise: ${activeExercise}\nSpoken log: ${transcript}`,
+      effort: config.effort.fast,
+      maxOutputTokens: 200,
     });
-    const parsed = await client.responses.parse({
-      model: process.env.OPENAI_TEXT_MODEL || "gpt-4.1-mini",
-      instructions: "Extract a gym set into kilograms and repetitions. Convert pounds to kilograms only when the speaker explicitly says pounds. Do not invent missing values.",
-      input: `Active exercise: ${activeExercise}\nSpoken log: ${transcription.text}`,
-      text: { format: zodTextFormat(VoiceSetSchema, "voice_set") },
-    });
-    if (!parsed.output_parsed) throw new Error("The set could not be parsed.");
-    return NextResponse.json({ transcript: transcription.text, ...parsed.output_parsed }, { headers: { "Cache-Control": "no-store" } });
+
+    return jsonOk({ transcript, ...parsed.value });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Voice logging failed.";
-    return NextResponse.json({ error: message }, { status: 502, headers: { "Cache-Control": "no-store" } });
+    return jsonError(error);
   }
 }

@@ -1,18 +1,30 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Flame, Footprints, Gauge, Utensils } from "lucide-react";
-import { formatNumber } from "@/lib/utils";
+import { Flame, Footprints, Utensils } from "lucide-react";
+import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, DataTile } from "@/components/ui/card";
+import { reduceable, T } from "@/lib/motion";
+import { cn, formatNumber } from "@/lib/utils";
 
 interface MetricDatum {
   label: string;
   value: number;
   target: number;
-  color: string;
+  /** Ink-ramp class for the bar fill; calories is the focused series. */
+  bar: string;
   unit: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
 }
 
+/**
+ * Daily output hero: calorie completion as the headline number, with the three
+ * tracked metrics beneath it on the monochrome data ramp.
+ *
+ * `reducedMotion` is passed in rather than read from `usePrefersReducedMotion`
+ * so the component stays renderable in environments without `matchMedia`.
+ */
 export function ActivityRings({
   calories,
   calorieTarget,
@@ -21,6 +33,9 @@ export function ActivityRings({
   steps,
   stepTarget,
   onEditSteps,
+  meta,
+  reducedMotion = false,
+  className,
 }: {
   calories: number;
   calorieTarget: number;
@@ -29,13 +44,17 @@ export function ActivityRings({
   steps: number;
   stepTarget: number;
   onEditSteps?: () => void;
+  /** Source and sample-data badges rendered beside the title. */
+  meta?: ReactNode;
+  reducedMotion?: boolean;
+  className?: string;
 }) {
   const metrics: MetricDatum[] = [
     {
       label: "Calories",
       value: calories,
       target: calorieTarget,
-      color: "var(--energy)",
+      bar: "bg-data-1",
       unit: "kcal",
       icon: <Flame size={14} />,
     },
@@ -43,7 +62,7 @@ export function ActivityRings({
       label: "Protein",
       value: protein,
       target: proteinTarget,
-      color: "var(--protein)",
+      bar: "bg-data-2",
       unit: "g",
       icon: <Utensils size={14} />,
     },
@@ -51,82 +70,94 @@ export function ActivityRings({
       label: "Steps",
       value: steps,
       target: stepTarget,
-      color: "var(--steps)",
+      bar: "bg-data-3",
       unit: "",
       icon: <Footprints size={14} />,
     },
   ];
   const caloriePercent = Math.round((calories / Math.max(1, calorieTarget)) * 100);
+  const calorieRemaining = Math.max(0, calorieTarget - calories);
+  const barTransition = reduceable(T.slow, reducedMotion);
 
   return (
-    <section className="panel overflow-hidden p-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="m-0 font-mono text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent-strong)]">Daily output</p>
-          <p className="mt-1 text-[12px] font-semibold text-white/42">Fuel, recovery and movement</p>
-        </div>
-        {onEditSteps && (
-          <button onClick={onEditSteps} className="ghost-action pressable rounded-[13px] px-3 text-[10px] font-bold">
-            Edit steps
-          </button>
-        )}
-      </div>
-
-      <div className="mt-6 flex items-end justify-between gap-4">
-        <div>
-          <span className="sr-only">{caloriePercent}%</span>
-          <div aria-hidden="true" className="flex items-start gap-1">
-            <span className="number-font text-[58px] font-black leading-[0.8] tracking-[-0.09em]">{caloriePercent}</span>
-            <span className="number-font mt-1 text-[18px] font-black text-[var(--accent-strong)]">%</span>
+    <Card className={cn("overflow-hidden", className)}>
+      <CardHeader className="items-center">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.06em] text-subtle-foreground">Daily output</p>
+            <h2 className="mt-0.5 text-base font-semibold tracking-tight">Fuel, recovery and movement</h2>
           </div>
-          <p className="mb-0 mt-3 text-[11px] font-semibold text-white/42">of today’s calorie target</p>
+          {meta ? <div className="flex flex-wrap items-center gap-1.5">{meta}</div> : null}
         </div>
-        <div className="flex h-[72px] w-[72px] shrink-0 flex-col items-center justify-center rounded-[20px] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] bg-[var(--accent-soft)] text-[var(--accent-strong)]">
-          <Gauge size={20} />
-          <span className="mt-1 font-mono text-[8px] font-black uppercase tracking-[0.13em]">On pace</span>
+        {onEditSteps ? (
+          <Button variant="ghost" size="sm" onClick={onEditSteps} className="shrink-0">
+            Edit steps
+          </Button>
+        ) : null}
+      </CardHeader>
+
+      <CardContent>
+        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+          <div>
+            <span className="sr-only">{caloriePercent}%</span>
+            <p aria-hidden="true" className="number-font text-6xl font-semibold leading-none">
+              {caloriePercent}
+              <span className="ml-1 text-xl font-medium tracking-normal text-subtle-foreground">%</span>
+            </p>
+            <p className="mt-3 text-sm text-muted-foreground">of today’s calorie target</p>
+          </div>
+          <div className="text-right">
+            <p className="number-font text-2xl font-semibold leading-none">
+              {formatNumber(calorieRemaining)}
+              <span className="ml-1 text-sm font-medium tracking-normal text-subtle-foreground">kcal</span>
+            </p>
+            <p className="mt-1.5 text-xs text-muted-foreground">remaining</p>
+          </div>
         </div>
-      </div>
 
-      <div className="mt-6 metric-track h-[7px]">
-        <motion.div
-          className="metric-fill bg-[var(--energy)]"
-          initial={{ width: 0 }}
-          animate={{ width: `${Math.min(caloriePercent, 100)}%` }}
-          transition={{ type: "spring", stiffness: 90, damping: 19 }}
-        />
-      </div>
-      <div className="mt-2 flex items-center justify-between font-mono text-[9px] font-bold text-white/34">
-        <span>{formatNumber(calories)} kcal</span>
-        <span>{formatNumber(calorieTarget)} target</span>
-      </div>
+        <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-muted">
+          <motion.div
+            className="h-full rounded-full bg-data-1"
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min(caloriePercent, 100)}%` }}
+            transition={barTransition}
+          />
+        </div>
+        <div className="number-font mt-2 flex items-center justify-between text-xs text-subtle-foreground">
+          <span>{formatNumber(calories)} kcal</span>
+          <span>{formatNumber(calorieTarget)} target</span>
+        </div>
 
-      <div className="mt-5 grid grid-cols-3 gap-2">
-        {metrics.map((metric, index) => {
-          const progress = Math.min(metric.value / Math.max(1, metric.target), 1);
-          return (
-            <div key={metric.label} className="rounded-[16px] border border-white/[0.065] bg-white/[0.035] p-3">
-              <span className="flex items-center gap-1.5 text-[9px] font-bold text-white/38">
-                <span style={{ color: metric.color }}>{metric.icon}</span>
-                {metric.label}
-              </span>
-              <p className="number-font mb-0 mt-3 truncate text-[18px] font-black leading-none" style={{ color: metric.color }}>
-                {formatNumber(metric.value)}
-                {metric.unit && <span className="ml-0.5 text-[8px] tracking-normal opacity-65">{metric.unit}</span>}
-              </p>
-              <div className="metric-track mt-3 h-[3px]">
-                <motion.div
-                  className="metric-fill"
-                  style={{ background: metric.color }}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress * 100}%` }}
-                  transition={{ delay: 0.08 * index, type: "spring", stiffness: 100, damping: 20 }}
-                />
-              </div>
-              <p className="number-font mb-0 mt-2 text-[8px] text-white/28">/{formatNumber(metric.target)}{metric.unit}</p>
-            </div>
-          );
-        })}
-      </div>
-    </section>
+        <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-3">
+          {metrics.map((metric, index) => {
+            const progress = Math.min(metric.value / Math.max(1, metric.target), 1);
+            return (
+              <DataTile key={metric.label} className="min-w-0 px-3 py-3 sm:px-4">
+                <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <span className="text-subtle-foreground">{metric.icon}</span>
+                  {metric.label}
+                </span>
+                <p className="number-font mt-3 truncate text-xl font-semibold leading-none sm:text-2xl">
+                  {formatNumber(metric.value)}
+                  {metric.unit && <span className="ml-1 text-xs font-medium tracking-normal text-subtle-foreground">{metric.unit}</span>}
+                </p>
+                <div className="mt-3 h-1 overflow-hidden rounded-full bg-border">
+                  <motion.div
+                    className={cn("h-full rounded-full", metric.bar)}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress * 100}%` }}
+                    transition={{ ...barTransition, delay: reducedMotion ? 0 : 0.08 * index }}
+                  />
+                </div>
+                <p className="number-font mt-2 text-xs text-subtle-foreground">
+                  / {formatNumber(metric.target)}
+                  {metric.unit ? ` ${metric.unit}` : ""}
+                </p>
+              </DataTile>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

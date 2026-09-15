@@ -4,14 +4,25 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Camera, ImagePlus, RotateCcw, Sparkles, X, Zap, ZapOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAppChrome } from "@/components/app-shell";
-import type { FoodAnalysis } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { AiClientError, analyzeMeal, type FoodResult } from "@/lib/ai/client";
+import type { FoodContext } from "@/lib/ai/schemas";
+import { fade, reduceable, usePrefersReducedMotion } from "@/lib/motion";
 
+/**
+ * Full-screen live capture. Secondary to text-first logging on the web, but kept for
+ * phones: frame the plate, shoot, and the photo goes straight to the estimator.
+ * Chrome is always dark (`data-theme="dark"` + `.camera-surface`) regardless of theme.
+ */
 export function CameraView({
+  context,
   onClose,
   onResult,
 }: {
+  context: FoodContext;
   onClose: () => void;
-  onResult: (analysis: FoodAnalysis) => void;
+  onResult: (analysis: FoodResult) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -22,6 +33,7 @@ export function CameraView({
   const [analyzing, setAnalyzing] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { setCameraActive, showToast } = useAppChrome();
+  const reduced = usePrefersReducedMotion();
 
   useEffect(() => {
     setCameraActive(true);
@@ -94,14 +106,10 @@ export function CameraView({
     const url = URL.createObjectURL(blob);
     setPreviewUrl(url);
     try {
-      const form = new FormData();
-      form.append("image", new File([blob], "mess-meal.jpg", { type: blob.type || "image/jpeg" }));
-      const response = await fetch("/api/ai/food", { method: "POST", body: form });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || "Could not analyze this meal");
-      onResult(payload as FoodAnalysis);
+      const result = await analyzeMeal({ image: blob, context });
+      onResult(result);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Could not analyze this meal");
+      showToast(error instanceof AiClientError ? error.message : "Could not analyze this meal");
       setPreviewUrl(null);
     } finally {
       setAnalyzing(false);
@@ -110,46 +118,62 @@ export function CameraView({
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="camera-surface fixed inset-0 z-[70] mx-auto max-w-[430px] overflow-hidden bg-black">
+    <motion.div
+      data-theme="dark"
+      variants={fade}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="camera-surface fixed inset-0 z-[70] overflow-hidden bg-background text-foreground"
+    >
       <video ref={videoRef} muted playsInline className="h-full w-full object-cover" />
-      {!ready && !previewUrl && (
-        <div className="absolute inset-0 bg-[#101012]" />
-      )}
+      {!ready && !previewUrl && <div className="absolute inset-0 bg-background" />}
       {/* Blob URLs are local camera frames and cannot be optimized by next/image. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {previewUrl && <img src={previewUrl} alt="Captured meal" className="absolute inset-0 h-full w-full object-cover" />}
-      <div className="absolute inset-x-0 top-0 h-32 bg-black/55" />
-      <div className="absolute inset-x-0 bottom-0 h-64 bg-black/70" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-background/60" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-background/70" />
 
-      <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-[calc(var(--safe-top)+12px)]">
-        <CircleButton label="Close camera" onClick={onClose}><X size={20} /></CircleButton>
-        <div className="glass flex items-center gap-2 rounded-[13px] px-3 py-2 text-[10px] font-bold">
-          <Sparkles size={14} className="text-[var(--accent-strong)]" /> VISION READY
+      <div className="absolute inset-x-0 top-0 pt-[calc(var(--safe-top)+12px)]">
+        <div className="mx-auto flex w-full max-w-[480px] items-center justify-between px-4">
+          <Button variant="secondary" size="icon" aria-label="Close camera" onClick={onClose}><X /></Button>
+          <Badge variant="brand"><Sparkles size={11} /> {ready ? "Camera ready" : "Starting camera"}</Badge>
+          <Button variant="secondary" size="icon" aria-label="Toggle flash" aria-pressed={torch} onClick={toggleTorch}>
+            {torch ? <Zap fill="currentColor" /> : <ZapOff />}
+          </Button>
         </div>
-        <CircleButton label="Toggle flash" onClick={toggleTorch}>{torch ? <Zap size={19} fill="currentColor" /> : <ZapOff size={19} />}</CircleButton>
       </div>
 
-      <div className="pointer-events-none absolute left-6 right-6 top-[18%] h-[48%] rounded-[24px] border border-white/20 shadow-[inset_0_0_0_1px_rgba(0,0,0,.18)]">
-        <span className="absolute -left-px -top-px h-9 w-9 rounded-tl-[24px] border-l-2 border-t-2 border-[#9178ff]" />
-        <span className="absolute -right-px -top-px h-9 w-9 rounded-tr-[24px] border-r-2 border-t-2 border-[#9178ff]" />
-        <span className="absolute -bottom-px -left-px h-9 w-9 rounded-bl-[24px] border-b-2 border-l-2 border-[#9178ff]" />
-        <span className="absolute -bottom-px -right-px h-9 w-9 rounded-br-[24px] border-b-2 border-r-2 border-[#9178ff]" />
+      <div className="pointer-events-none absolute inset-x-0 top-[18%] h-[48%]">
+        <div className="relative mx-auto h-full w-full max-w-[480px] px-6">
+          <div className="relative h-full w-full rounded-xl border border-border">
+            <span className="absolute -left-px -top-px h-8 w-8 rounded-tl-xl border-l-2 border-t-2 border-brand" />
+            <span className="absolute -right-px -top-px h-8 w-8 rounded-tr-xl border-r-2 border-t-2 border-brand" />
+            <span className="absolute -bottom-px -left-px h-8 w-8 rounded-bl-xl border-b-2 border-l-2 border-brand" />
+            <span className="absolute -bottom-px -right-px h-8 w-8 rounded-br-xl border-b-2 border-r-2 border-brand" />
+          </div>
+        </div>
       </div>
-      <p className="absolute inset-x-10 bottom-[185px] text-center text-xs font-medium leading-5 text-white/70">
-        Keep the full plate in frame. We’ll account for hidden oil and standard mess portions.
-      </p>
 
-      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-8 pb-[calc(30px+var(--safe-bottom))]">
-        <CircleButton label="Choose from photos" onClick={() => fileRef.current?.click()} large><ImagePlus size={22} /></CircleButton>
-        <button
-          aria-label="Take photo"
-          disabled={analyzing}
-          onClick={capture}
-          className="relative flex h-[82px] w-[82px] items-center justify-center rounded-[27px] border-2 border-white bg-white/16 shadow-2xl backdrop-blur-md active:scale-95 disabled:opacity-60"
-        >
-          <span className="h-[62px] w-[62px] rounded-[21px] bg-white" />
-        </button>
-        <CircleButton label="Flip camera" onClick={() => setFacingMode((value) => value === "environment" ? "user" : "environment")} large><RotateCcw size={22} /></CircleButton>
+      <div className="absolute inset-x-0 bottom-0 pb-[calc(28px+var(--safe-bottom))]">
+        <div className="mx-auto w-full max-w-[480px] px-6">
+          <p className="mb-6 text-center text-sm leading-5 text-muted-foreground">
+            Keep the full plate in frame. Hidden oil and standard portions are accounted for.
+          </p>
+          <div className="flex items-center justify-between px-2">
+            <Button variant="secondary" size="icon" className="size-11" aria-label="Choose from photos" onClick={() => fileRef.current?.click()}><ImagePlus /></Button>
+            <button
+              type="button"
+              aria-label="Take photo"
+              disabled={analyzing}
+              onClick={capture}
+              className="pressable flex size-[72px] items-center justify-center rounded-2xl border-2 border-foreground bg-muted disabled:opacity-60"
+            >
+              <span className="size-14 rounded-xl bg-foreground" />
+            </button>
+            <Button variant="secondary" size="icon" className="size-11" aria-label="Flip camera" onClick={() => setFacingMode((value) => (value === "environment" ? "user" : "environment"))}><RotateCcw /></Button>
+          </div>
+        </div>
       </div>
 
       <input ref={fileRef} className="hidden" type="file" accept="image/*" capture="environment" onChange={(event) => {
@@ -160,26 +184,22 @@ export function CameraView({
 
       <AnimatePresence>
         {analyzing && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 flex flex-col items-center justify-center bg-black/38 backdrop-blur-md">
-            <div className="relative h-24 w-24">
-              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }} className="absolute inset-0 rounded-[29px] border-2 border-[#7c5cff] border-r-transparent opacity-90" />
-              <div className="absolute inset-2 flex items-center justify-center rounded-[23px] bg-black/85">
-                <Camera size={25} />
+          <motion.div variants={fade} initial="hidden" animate="visible" exit="exit" className="absolute inset-0 flex flex-col items-center justify-center bg-background/70">
+            <div className="relative size-20">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={reduceable({ duration: 1.2, repeat: reduced ? 0 : Infinity, ease: "linear" }, reduced)}
+                className="absolute inset-0 rounded-2xl border-2 border-brand border-r-transparent"
+              />
+              <div className="absolute inset-2 flex items-center justify-center rounded-xl bg-card text-foreground">
+                <Camera size={22} />
               </div>
             </div>
-            <p className="mt-5 text-[17px] font-semibold">Reading your plate…</p>
-            <p className="mt-1 text-xs text-white/45">Estimating portions and hidden oils</p>
+            <p className="mt-5 text-lg font-semibold">Reading your plate…</p>
+            <p className="mt-1 text-sm text-muted-foreground">Estimating portions and hidden oils</p>
           </motion.div>
         )}
       </AnimatePresence>
     </motion.div>
-  );
-}
-
-function CircleButton({ label, onClick, children, large = false }: { label: string; onClick: () => void; children: React.ReactNode; large?: boolean }) {
-  return (
-    <button aria-label={label} onClick={onClick} className={`glass flex items-center justify-center rounded-[14px] ${large ? "h-12 w-12" : "h-10 w-10"}`}>
-      {children}
-    </button>
   );
 }

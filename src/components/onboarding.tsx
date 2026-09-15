@@ -1,18 +1,35 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Activity, ArrowLeft, ArrowRight, Check, Dumbbell, Moon, ScanLine } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Moon } from "lucide-react";
 import { useMemo, useState } from "react";
+import { PlanConfigurator } from "@/components/ai/plan-configurator";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { DataTile } from "@/components/ui/card";
+import { Field, Input, Select } from "@/components/ui/input";
 import { calculateTargets, recommendedActivityMultiplier } from "@/lib/calculations";
+import { fadeRise, reduceable, T, usePrefersReducedMotion } from "@/lib/motion";
 import { defaultProfile } from "@/lib/seed";
 import { useBodyFitnessStore } from "@/lib/store";
 import type { OccupationActivity, UserProfile } from "@/lib/types";
 import { cn, formatNumber } from "@/lib/utils";
 
-const steps = ["Welcome", "Body", "Lifestyle", "Targets"];
+const steps = [
+  { label: "Welcome", caption: "What this is" },
+  { label: "Body", caption: "Your baseline" },
+  { label: "Lifestyle", caption: "A normal week" },
+  { label: "Targets", caption: "Formula baseline" },
+  { label: "Plan", caption: "Refine with AI" },
+];
+
+type SetProfile = React.Dispatch<React.SetStateAction<UserProfile>>;
 
 export function Onboarding() {
   const finishOnboarding = useBodyFitnessStore((state) => state.finishOnboarding);
+  const targetsSource = useBodyFitnessStore((state) => state.targetsSource);
+  const storeTargets = useBodyFitnessStore((state) => state.targets);
+  const reduced = usePrefersReducedMotion();
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<UserProfile>({ ...defaultProfile });
 
@@ -30,76 +47,125 @@ export function Onboarding() {
 
   const next = () => setStep((value) => Math.min(steps.length - 1, value + 1));
   const back = () => setStep((value) => Math.max(0, value - 1));
+  const last = step === steps.length - 1;
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="fixed inset-0 z-[100] mx-auto w-full max-w-[430px] overflow-hidden bg-[var(--background)]"
+      variants={fadeRise}
+      initial="hidden"
+      animate="visible"
+      transition={T.base}
+      className="fixed inset-0 z-[100] overflow-y-auto bg-background text-foreground"
     >
-      <div className="relative flex min-h-[100dvh] flex-col px-5 pb-[calc(22px+var(--safe-bottom))] pt-[calc(18px+var(--safe-top))]">
-        <div className="flex h-11 items-center justify-between">
-          <button
-            aria-label="Back"
-            onClick={back}
-            className={cn(
-              "icon-button pressable transition-opacity",
-              step === 0 && "pointer-events-none opacity-0",
-            )}
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <div className="flex gap-1.5">
-            {steps.map((label, index) => (
-              <motion.span
-                key={label}
-                animate={{ width: index === step ? 22 : 6, opacity: index <= step ? 1 : 0.25 }}
-                className="h-1.5 rounded-[3px] bg-[var(--accent)]"
-              />
-            ))}
+      <div className="mx-auto flex min-h-[100dvh] w-full max-w-xl flex-col px-4 pb-[calc(24px+env(safe-area-inset-bottom,0px))] pt-[calc(12px+env(safe-area-inset-top,0px))] lg:grid lg:max-w-[1100px] lg:grid-cols-[1fr_1.2fr] lg:gap-16 lg:px-10 lg:py-14">
+        <aside className="hidden lg:flex lg:flex-col lg:justify-between lg:py-2">
+          <div>
+            <p className="page-kicker mb-4">BodyFitness · Private performance system</p>
+            <h1 className="text-5xl font-semibold leading-none tracking-tight">
+              Build the signal.
+              <br />
+              Cut the noise.
+            </h1>
+            <p className="mt-6 max-w-sm text-base leading-relaxed text-muted-foreground">
+              One focused workspace for nutrition, training and body recomposition. Your history stays on this device unless you choose to sync it.
+            </p>
           </div>
-          <div className="h-10 w-10" />
-        </div>
+          <ol className="mt-12 space-y-1 border-t border-border pt-6">
+            {steps.map((item, index) => {
+              const state = index === step ? "current" : index < step ? "done" : "upcoming";
+              return (
+                <li
+                  key={item.label}
+                  aria-current={state === "current" ? "step" : undefined}
+                  className={cn(
+                    "flex items-center gap-4 rounded-md px-2 py-2.5",
+                    state === "current" && "bg-muted",
+                  )}
+                >
+                  <span className={cn("font-mono text-xs font-medium tracking-[0.08em]", state === "current" ? "text-brand" : "text-subtle-foreground")}>
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className={cn("block text-sm font-medium", state === "upcoming" && "text-muted-foreground")}>{item.label}</span>
+                    <span className="block text-xs text-subtle-foreground">{item.caption}</span>
+                  </span>
+                  {state === "done" ? <Check size={14} className="text-success" aria-hidden="true" /> : null}
+                </li>
+              );
+            })}
+          </ol>
+        </aside>
 
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ type: "spring", stiffness: 340, damping: 31 }}
-            className="flex min-h-0 flex-1 flex-col"
-          >
-            {step === 0 && <WelcomeStep />}
-            {step === 1 && <BodyStep profile={profile} setProfile={setProfile} />}
-            {step === 2 && <LifestyleStep profile={profile} setProfile={setProfile} />}
-            {step === 3 && (
-              <TargetStep
-                profile={profileWithRecommendation}
-                setProfile={setProfile}
-                targets={targets}
-              />
+        <section className="flex min-h-0 flex-1 flex-col">
+          <div className="flex h-11 items-center justify-between">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Back"
+              onClick={back}
+              className={cn("transition-opacity", step === 0 && "pointer-events-none opacity-0")}
+            >
+              <ArrowLeft />
+            </Button>
+            <div className="flex items-center gap-1.5" aria-hidden="true">
+              {steps.map((item, index) => (
+                <motion.span
+                  key={item.label}
+                  animate={{ width: index === step ? 22 : 6, opacity: index <= step ? 1 : 0.3 }}
+                  transition={reduceable(T.base, reduced)}
+                  className="h-1.5 rounded-sm bg-brand"
+                />
+              ))}
+            </div>
+            <span className="font-mono text-xs text-subtle-foreground">
+              {step === 0 ? "" : `${step} / ${steps.length - 1}`}
+            </span>
+          </div>
+
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={step}
+              variants={fadeRise}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={T.base}
+              className="flex min-h-0 flex-1 flex-col"
+            >
+              {step === 0 && <WelcomeStep />}
+              {step === 1 && <BodyStep profile={profile} setProfile={setProfile} />}
+              {step === 2 && <LifestyleStep profile={profile} setProfile={setProfile} />}
+              {step === 3 && <TargetStep profile={profileWithRecommendation} setProfile={setProfile} targets={targets} />}
+              {step === 4 && (
+                <PlanStep
+                  profile={profileWithRecommendation}
+                  setProfile={setProfile}
+                  targets={targetsSource === "ai" ? storeTargets : targets}
+                  aiActive={targetsSource === "ai"}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+          <div className="mt-6 border-t border-border pt-4">
+            {!last ? (
+              <Button variant="primary" size="lg" block onClick={next}>
+                {step === 0 ? "Set up my plan" : "Continue"}
+                <ArrowRight />
+              </Button>
+            ) : (
+              <Button variant="primary" size="lg" block onClick={() => finishOnboarding(profileWithRecommendation)}>
+                <Check />
+                Enter BodyFitness
+              </Button>
             )}
-          </motion.div>
-        </AnimatePresence>
-
-        {step < 3 ? (
-          <button
-            onClick={next}
-            className="primary-action pressable mt-4 flex min-h-14 w-full items-center justify-center gap-2 rounded-[15px] text-[16px] font-black"
-          >
-            {step === 0 ? "Set up my plan" : "Continue"}
-            <ArrowRight size={19} strokeWidth={2.6} />
-          </button>
-        ) : (
-          <button
-            onClick={() => finishOnboarding(profileWithRecommendation)}
-            className="primary-action pressable mt-4 flex min-h-14 w-full items-center justify-center gap-2 rounded-[15px] text-[16px] font-black"
-          >
-            <Check size={20} strokeWidth={3} />
-            Enter BodyFitness
-          </button>
-        )}
+            {last ? (
+              <p className="mt-3 text-center text-xs text-muted-foreground">
+                {targetsSource === "ai" ? "Your AI plan is saved with your profile." : "Skipping AI keeps the formula targets. You can configure a plan later from Profile."}
+              </p>
+            ) : null}
+          </div>
+        </section>
       </div>
     </motion.div>
   );
@@ -107,39 +173,47 @@ export function Onboarding() {
 
 function WelcomeStep() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center pb-8 text-center">
-      <motion.div initial={{ opacity: 0, y: 14, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 250, damping: 22 }} className="panel relative mb-9 grid h-36 w-36 grid-cols-2 gap-2.5 rounded-[30px] p-4">
-        <span className="flex items-center justify-center rounded-[14px] bg-[var(--accent)] text-white"><Activity size={25} /></span>
-        <span className="flex items-center justify-center rounded-[14px] bg-[color-mix(in_srgb,var(--protein)_16%,var(--surface-soft))] text-[var(--protein)]"><Dumbbell size={24} /></span>
-        <span className="flex items-center justify-center rounded-[14px] bg-[color-mix(in_srgb,var(--steps)_15%,var(--surface-soft))] text-[var(--steps)]"><ScanLine size={24} /></span>
-        <span className="flex items-center justify-center rounded-[14px] border border-[var(--border)] bg-[var(--surface-soft)] font-mono text-[13px] font-black">BF</span>
-      </motion.div>
-      <p className="page-kicker mb-3">Private performance system</p>
-      <h1 className="m-0 text-[40px] font-black leading-[0.94] tracking-[-0.065em]">
+    <div className="flex flex-1 flex-col justify-center py-8 lg:py-4">
+      <p className="page-kicker mb-3 lg:hidden">Private performance system</p>
+      <h1 className="text-4xl font-semibold leading-none tracking-tight lg:hidden">
         Build the signal.
-        <br />Cut the noise.
+        <br />
+        Cut the noise.
       </h1>
-      <p className="mt-5 max-w-[316px] text-[15px] leading-6 text-white/50">
+      <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground lg:hidden">
         One focused workspace for nutrition, training and body recomposition. Your history stays on this device.
       </p>
+      <h2 className="hidden text-3xl font-semibold tracking-tight lg:block">Four short steps</h2>
+      <p className="hidden text-base text-muted-foreground lg:mt-2 lg:block">About two minutes. Every number can be changed later.</p>
+      <ul className="mt-8 divide-y divide-border border-y border-border">
+        {[
+          ["01", "Body", "Age, height and weight set your BMR."],
+          ["02", "Lifestyle", "Movement and training pick an activity level."],
+          ["03", "Targets", "A mild deficit with high protein, from the formula."],
+          ["04", "Plan", "Optionally let the AI coach refine the numbers."],
+        ].map(([index, title, body]) => (
+          <li key={index} className="flex items-start gap-4 py-3">
+            <span className="mt-0.5 font-mono text-xs font-medium tracking-[0.08em] text-brand">{index}</span>
+            <span className="min-w-0">
+              <span className="block text-sm font-medium">{title}</span>
+              <span className="block text-sm text-muted-foreground">{body}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 
-function BodyStep({
-  profile,
-  setProfile,
-}: {
-  profile: UserProfile;
-  setProfile: React.Dispatch<React.SetStateAction<UserProfile>>;
-}) {
+function BodyStep({ profile, setProfile }: { profile: UserProfile; setProfile: SetProfile }) {
   return (
     <StepContainer
-      eyebrow="Step 1 of 3"
+      eyebrow="Step 1 of 4"
       title="Start with your baseline"
       description="These values power your BMR, calorie and protein targets."
     >
       <Segmented
+        label="Sex"
         value={profile.sex}
         options={[
           ["male", "Male"],
@@ -153,16 +227,15 @@ function BodyStep({
         <NumberField label="Current weight" value={profile.currentWeightKg} suffix="kg" step={0.1} onChange={(currentWeightKg) => setProfile((v) => ({ ...v, currentWeightKg }))} />
         <NumberField label="Goal weight" value={profile.goalWeightKg} suffix="kg" step={0.1} onChange={(goalWeightKg) => setProfile((v) => ({ ...v, goalWeightKg }))} />
       </div>
-      <label className="block">
-        <span className="mb-2 block text-[13px] font-semibold text-white/48">Body fat, optional</span>
+      <Field label="Body fat, optional" hint="Skip if unsure; it sharpens the BMR estimate.">
         <div className="relative">
-          <input
-            className="ios-field number-font pr-12 text-[17px] font-semibold"
+          <Input
             type="number"
             inputMode="decimal"
             min={5}
             max={60}
-            placeholder="Skip if unsure"
+            placeholder="—"
+            className="pr-10"
             value={profile.bodyFatPercent ?? ""}
             onChange={(event) =>
               setProfile((value) => ({
@@ -171,30 +244,22 @@ function BodyStep({
               }))
             }
           />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-white/35">%</span>
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-subtle-foreground">%</span>
         </div>
-      </label>
+      </Field>
     </StepContainer>
   );
 }
 
-function LifestyleStep({
-  profile,
-  setProfile,
-}: {
-  profile: UserProfile;
-  setProfile: React.Dispatch<React.SetStateAction<UserProfile>>;
-}) {
+function LifestyleStep({ profile, setProfile }: { profile: UserProfile; setProfile: SetProfile }) {
   return (
     <StepContainer
-      eyebrow="Step 2 of 3"
+      eyebrow="Step 2 of 4"
       title="Describe a normal week"
-      description="We use movement and training to recommend an activity level—not to judge your day."
+      description="We use movement and training to recommend an activity level, not to judge your day."
     >
-      <label className="block">
-        <span className="mb-2 block text-[13px] font-semibold text-white/48">Workday movement</span>
-        <select
-          className="ios-field appearance-none text-[15px] font-semibold"
+      <Field label="Workday movement">
+        <Select
           value={profile.occupationActivity}
           onChange={(event) =>
             setProfile((value) => ({
@@ -207,17 +272,17 @@ function LifestyleStep({
           <option value="mixed">A mix of sitting and walking</option>
           <option value="active">On my feet most of the day</option>
           <option value="manual">Physical or manual work</option>
-        </select>
-      </label>
+        </Select>
+      </Field>
       <div className="grid grid-cols-2 gap-3">
         <NumberField label="Average steps" value={profile.averageSteps} suffix="/ day" step={500} onChange={(averageSteps) => setProfile((v) => ({ ...v, averageSteps }))} />
         <NumberField label="Training" value={profile.trainingDays} suffix="days / wk" min={0} max={7} onChange={(trainingDays) => setProfile((v) => ({ ...v, trainingDays }))} />
-        <NumberField label="Session length" value={profile.sessionMinutes} suffix="minutes" step={5} onChange={(sessionMinutes) => setProfile((v) => ({ ...v, sessionMinutes }))} />
+        <NumberField label="Session length" value={profile.sessionMinutes} suffix="min" step={5} onChange={(sessionMinutes) => setProfile((v) => ({ ...v, sessionMinutes }))} />
         <NumberField label="Sleep" value={profile.sleepHours} suffix="hours" step={0.5} onChange={(sleepHours) => setProfile((v) => ({ ...v, sleepHours }))} />
       </div>
-      <div className="flex gap-3 rounded-[16px] border border-[var(--border)] bg-[var(--surface-soft)] p-4 text-[var(--steps)]">
-        <Moon className="mt-0.5 h-5 w-5 shrink-0" />
-        <p className="m-0 text-[13px] leading-5 text-white/58">
+      <div className="flex gap-3 rounded-lg border border-border bg-muted p-4">
+        <Moon size={18} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <p className="text-sm leading-relaxed text-muted-foreground">
           Sleep shapes recovery coaching, but we do not invent a calorie penalty for a short night.
         </p>
       </div>
@@ -231,32 +296,32 @@ function TargetStep({
   targets,
 }: {
   profile: UserProfile;
-  setProfile: React.Dispatch<React.SetStateAction<UserProfile>>;
+  setProfile: SetProfile;
   targets: ReturnType<typeof calculateTargets>;
 }) {
   return (
     <StepContainer
-      eyebrow="Step 3 of 3"
+      eyebrow="Step 3 of 4"
       title="Your recomp targets"
       description="A mild deficit with high protein. You can change this anytime."
     >
-      <div className="grid grid-cols-2 gap-3">
-        <TargetCard label="Calories" value={formatNumber(targets.calories)} unit="kcal" color="var(--energy)" />
-        <TargetCard label="Protein" value={formatNumber(targets.proteinG)} unit="grams" color="var(--protein)" />
-        <TargetCard label="Water" value={(targets.waterMl / 1_000).toFixed(1)} unit="litres" color="var(--steps)" />
-        <TargetCard label="Steps" value={`${Math.round(targets.steps / 1_000)}k`} unit="daily" color="var(--accent-strong)" />
-      </div>
-      <div className="panel p-4">
-        <div className="flex items-center justify-between">
+      <TargetGrid targets={targets} />
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="m-0 text-sm font-semibold">Daily deficit</p>
-            <p className="mt-1 text-xs text-white/40">Based on {formatNumber(targets.tdee)} kcal TDEE</p>
+            <p className="text-sm font-medium">Daily deficit</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Based on <span className="number-font">{formatNumber(targets.tdee)}</span> kcal TDEE
+            </p>
           </div>
-          <span className="number-font text-2xl font-black text-[var(--protein)]">{profile.deficitPercent}%</span>
+          <p className="number-font text-2xl font-semibold leading-none">
+            {profile.deficitPercent}
+            <span className="ml-0.5 text-sm font-medium text-subtle-foreground">%</span>
+          </p>
         </div>
         <input
           aria-label="Daily calorie deficit"
-          className="mt-4 w-full accent-[var(--accent)]"
+          className="mt-4 w-full accent-brand"
           type="range"
           min={5}
           max={20}
@@ -266,15 +331,58 @@ function TargetStep({
             setProfile((value) => ({ ...value, deficitPercent: Number(event.target.value) }))
           }
         />
-        <div className="mt-1 flex justify-between text-[10px] font-semibold text-white/28">
-          <span>Gentle</span>
-          <span>Faster</span>
+        <div className="mt-1 flex justify-between text-xs text-subtle-foreground">
+          <span>Gentle · 5%</span>
+          <span>Faster · 20%</span>
         </div>
       </div>
-      <p className="m-0 px-2 text-center text-xs leading-5 text-white/35">
-        Protein uses your {profile.goalWeightKg} kg goal weight. Calorie estimates are a starting point, not medical advice.
+      <p className="text-xs leading-relaxed text-muted-foreground">
+        Protein uses your <span className="number-font">{profile.goalWeightKg}</span> kg goal weight. Calorie estimates are a starting point, not medical advice.
       </p>
     </StepContainer>
+  );
+}
+
+function PlanStep({
+  profile,
+  setProfile,
+  targets,
+  aiActive,
+}: {
+  profile: UserProfile;
+  setProfile: SetProfile;
+  targets: ReturnType<typeof calculateTargets>;
+  aiActive: boolean;
+}) {
+  return (
+    <StepContainer
+      eyebrow="Step 4 of 4"
+      title="Refine the plan with AI"
+      description="Pick a goal and diet. The coach compares its plan with the formula baseline; accept it or keep the formula."
+    >
+      <PlanConfigurator
+        profile={profile}
+        onProfileChange={(patch) => setProfile((value) => ({ ...value, ...patch }))}
+      />
+      <div className="border-t border-border pt-5">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <p className="text-xs font-medium uppercase tracking-[0.06em] text-subtle-foreground">Your current targets</p>
+          {aiActive ? <Badge variant="brand">AI plan</Badge> : <Badge>Formula</Badge>}
+        </div>
+        <TargetGrid targets={targets} />
+      </div>
+    </StepContainer>
+  );
+}
+
+function TargetGrid({ targets }: { targets: ReturnType<typeof calculateTargets> }) {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <TargetCard label="Calories" value={formatNumber(targets.calories)} unit="kcal" />
+      <TargetCard label="Protein" value={formatNumber(targets.proteinG)} unit="g" />
+      <TargetCard label="Water" value={(targets.waterMl / 1_000).toFixed(1)} unit="L" />
+      <TargetCard label="Steps" value={formatNumber(targets.steps)} unit="/ day" />
+    </div>
   );
 }
 
@@ -290,10 +398,10 @@ function StepContainer({
   children: React.ReactNode;
 }) {
   return (
-    <div className="scrollbar-none flex-1 overflow-y-auto pb-3 pt-5">
+    <div className="flex-1 pb-2 pt-5">
       <p className="page-kicker mb-2">{eyebrow}</p>
-      <h2 className="m-0 text-[31px] font-black leading-[1.02] tracking-[-0.055em]">{title}</h2>
-      <p className="mb-6 mt-3 text-[15px] leading-5 text-white/48">{description}</p>
+      <h2 className="text-3xl font-semibold tracking-tight">{title}</h2>
+      <p className="mb-6 mt-2 max-w-md text-base text-muted-foreground">{description}</p>
       <div className="space-y-4">{children}</div>
     </div>
   );
@@ -317,75 +425,75 @@ function NumberField({
   onChange: (value: number) => void;
 }) {
   return (
-    <label className="block">
-      <span className="mb-2 block text-[13px] font-semibold text-white/48">{label}</span>
+    <Field label={label}>
       <div className="relative">
-        <input
-          className="ios-field number-font pr-16 text-[17px] font-semibold"
+        <Input
           type="number"
           inputMode="decimal"
           min={min}
           max={max}
           step={step}
           value={value}
+          className="pr-16"
           onChange={(event) => onChange(Number(event.target.value))}
         />
-        <span className="pointer-events-none absolute right-3 top-1/2 max-w-[58px] -translate-y-1/2 text-right text-[10px] font-semibold leading-3 text-white/30">
+        <span className="pointer-events-none absolute right-3 top-1/2 max-w-14 -translate-y-1/2 truncate text-right text-xs text-subtle-foreground">
           {suffix}
         </span>
       </div>
-    </label>
+    </Field>
   );
 }
 
 function Segmented({
+  label,
   value,
   options,
   onChange,
 }: {
+  label: string;
   value: string;
   options: Array<[string, string]>;
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="segmented-control relative grid grid-cols-2 p-1">
-      {options.map(([option, label]) => (
-        <button
-          key={option}
-          onClick={() => onChange(option)}
-          className="relative h-9 rounded-[10px] text-sm font-semibold"
-        >
-          {value === option && (
-            <motion.span
-              layoutId="onboarding-segment"
-              className="segmented-selected absolute inset-0 rounded-[11px]"
-            />
-          )}
-          <span className="relative">{label}</span>
-        </button>
-      ))}
+    <div>
+      <p className="mb-1.5 block text-xs font-medium uppercase tracking-[0.06em] text-subtle-foreground">{label}</p>
+      <div role="group" aria-label={label} className="relative grid grid-cols-2 gap-1 rounded-md border border-border bg-muted p-1">
+        {options.map(([option, optionLabel]) => {
+          const selected = value === option;
+          return (
+            <button
+              key={option}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => onChange(option)}
+              className={cn("pressable relative h-9 rounded-sm text-sm font-medium", selected ? "text-foreground" : "text-muted-foreground hover:text-foreground")}
+            >
+              {selected && (
+                <motion.span
+                  layoutId="onboarding-segment"
+                  transition={T.layout}
+                  className="absolute inset-0 rounded-sm border border-border bg-card"
+                />
+              )}
+              <span className="relative">{optionLabel}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-function TargetCard({
-  label,
-  value,
-  unit,
-  color,
-}: {
-  label: string;
-  value: string;
-  unit: string;
-  color: string;
-}) {
+function TargetCard({ label, value, unit }: { label: string; value: string; unit: string }) {
   return (
-    <div className="panel min-h-[108px] p-4">
-      <div className="mb-4 h-2 w-5 rounded-[3px]" style={{ background: color }} />
-      <p className="m-0 text-xs font-semibold text-white/42">{label}</p>
-      <p className="number-font mb-0 mt-1 text-[27px] font-bold leading-none">
-        {value} <span className="text-[11px] font-semibold tracking-normal text-white/35">{unit}</span>
+    <DataTile>
+      <p className="text-xs font-medium uppercase tracking-[0.06em] text-subtle-foreground">{label}</p>
+      <p className="number-font mt-1 text-2xl font-semibold leading-none">
+        {value}
+        <span className="ml-1 text-xs font-medium tracking-normal text-subtle-foreground">{unit}</span>
       </p>
-    </div>
+    </DataTile>
   );
 }

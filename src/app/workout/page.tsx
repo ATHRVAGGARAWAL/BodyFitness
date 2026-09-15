@@ -1,12 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Activity, BarChart3, CalendarDays, ChevronRight, Pencil, Play, Square, TimerReset, Trophy } from "lucide-react";
+import { Activity, BarChart3, Check, Pencil, Play, Square, TimerReset, Trophy } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { LargeTitle } from "@/components/large-title";
 import { ExerciseCard } from "@/components/workout/exercise-card";
 import { WorkoutEditorSheet } from "@/components/workout/workout-editor-sheet";
 import { useAppChrome } from "@/components/app-shell";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataTile } from "@/components/ui/card";
+import { EmptyState, SectionHeader } from "@/components/ui/section-header";
+import { T } from "@/lib/motion";
 import { useBodyFitnessStore } from "@/lib/store";
 import {
   activeSession,
@@ -15,7 +20,8 @@ import {
   sessionVolumeKg,
   weeklyCycle,
 } from "@/lib/training-metrics";
-import { formatNumber } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
+import type { WorkoutDay } from "@/lib/types";
 
 export default function WorkoutPage() {
   const plan = useBodyFitnessStore((state) => state.workoutPlan);
@@ -45,119 +51,232 @@ export default function WorkoutPage() {
   return (
     <main className="page-shell">
       <LargeTitle
-        eyebrow="Adaptive training system"
+        eyebrow="Training"
         title="Training Lab"
-        action={<button onClick={() => setEditorOpen(true)} className="profile-button pressable" aria-label="Edit workout split"><Pencil size={19} /></button>}
+        description="Pick a day, log sets, and let the week keep score."
+        action={
+          <Button variant="secondary" onClick={() => setEditorOpen(true)} aria-label="Edit workout split">
+            <Pencil />
+            <span className="hidden sm:inline">Edit split</span>
+          </Button>
+        }
       />
 
-      <section className="panel overflow-hidden p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="page-kicker"><CalendarDays size={12} /> Weekly protocol</div>
-            <p className="number-font mb-0 mt-3 text-[34px] font-black leading-none">
-              {String(cycle.completed).padStart(2, "0")}
-              <span className="ml-1 text-[15px] font-bold tracking-normal text-white/30">/{String(cycle.planned).padStart(2, "0")}</span>
-            </p>
-            <p className="mt-2 text-[11px] text-white/36">Plan days trained this week</p>
-          </div>
-          <div className="data-tile flex min-w-[112px] flex-col items-end p-3">
-            {cycle.completed > 0 && (
-              <span className={`flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.08em] ${onPace ? "text-[var(--success)]" : "text-[var(--warning)]"}`}>
-                <Activity size={12} /> {onPace ? "On pace" : "Behind"}
-              </span>
-            )}
-            <p className="number-font mb-0 mt-3 text-[25px] font-black">
-              {averageMinutes === null ? "—" : averageMinutes}
-              {averageMinutes !== null && <span className="ml-1 text-[10px] tracking-normal text-white/32">min</span>}
-            </p>
-            <p className="mt-1 text-[9px] text-white/28">{averageMinutes === null ? "no finished sessions" : "avg session"}</p>
-          </div>
-        </div>
-        <div className="mt-5 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.max(1, plan.length)}, minmax(0, 1fr))` }}>
-          {plan.map((day) => {
-            const trained = cycle.completedDayIds.includes(day.id);
-            return (
-              <div key={day.id} className="space-y-1.5 text-center">
-                <span className={`block h-1.5 rounded-full ${trained ? "bg-[var(--accent)]" : "bg-[var(--fill)]"}`} />
-                <span className="text-[8px] font-black uppercase tracking-[0.04em] text-white/25">{day.name.slice(0, 3)}</span>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {selectedDay && (
-        <SessionStrip
-          key={current?.id ?? "idle"}
-          session={current}
-          setLogs={setLogs}
-          dayName={selectedDay.name}
-          onStart={() => {
-            if (startSession(selectedDay.id)) showToast(`${selectedDay.name} session started`);
-          }}
-          onFinish={() => {
-            finishSession();
-            showToast("Session finished");
-          }}
+      {/*
+        < md : one column — day strip, session, exercises, protocol, signals.
+        md   : sticky day list left; session above the exercises, protocol + signals paired below.
+        lg   : session, protocol and signals collapse into a sticky right rail.
+        The rail is `display: contents` below `lg`, so its children are placed as grid items directly.
+      */}
+      <div className="grid min-w-0 gap-6 md:grid-cols-[240px_minmax(0,1fr)_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)_320px] lg:gap-8">
+        <DayNav
+          plan={plan}
+          selectedId={selectedDay?.id}
+          trainedIds={cycle.completedDayIds}
+          onSelect={setSelectedDayId}
+          onAdd={() => setEditorOpen(true)}
         />
-      )}
 
-      <div className="scrollbar-none -mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-2">
-        {plan.map((day, index) => {
-          const active = day.id === selectedDay?.id;
-          return (
-            <button key={day.id} onClick={() => setSelectedDayId(day.id)} className={`pressable relative min-h-[62px] min-w-[104px] overflow-hidden rounded-[17px] border px-3 text-left ${active ? "border-[color-mix(in_srgb,var(--accent)_48%,transparent)] text-white" : "border-[var(--border)] bg-[var(--surface)] text-white/42"}`}>
-              {active && <motion.span layoutId="workout-day" className="absolute inset-0 bg-[var(--accent-soft)]" transition={{ type: "spring", stiffness: 420, damping: 34 }} />}
-              <span className="relative block font-mono text-[8px] font-black tracking-[0.08em] text-white/30">0{index + 1}</span>
-              <span className="relative mt-1 block text-[13px] font-bold">{day.name}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {selectedDay && (
-        <section className="mt-7">
-          <SectionHeader index="01" title={`${selectedDay.name} protocol`} caption={`${selectedDay.exercises.length} movements · tap a module to log`} />
-          <div className="space-y-3">
-            {selectedDay.exercises.map((exercise, index) => <ExerciseCard key={exercise.id} exercise={exercise} dayId={selectedDay.id} index={index} />)}
-          </div>
+        <section className="order-3 min-w-0 md:order-none md:col-span-2 md:col-start-2 md:row-start-2 lg:col-span-1 lg:row-start-1 lg:row-span-2">
+          {selectedDay ? (
+            <>
+              <SectionHeader
+                index="01"
+                title={selectedDay.name}
+                caption={`${selectedDay.exercises.length} ${selectedDay.exercises.length === 1 ? "movement" : "movements"} · open a module to log sets`}
+              />
+              {selectedDay.exercises.length ? (
+                <div className="flex flex-col gap-4">
+                  {selectedDay.exercises.map((exercise, index) => (
+                    <ExerciseCard key={exercise.id} exercise={exercise} dayId={selectedDay.id} index={index} />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="No exercises on this day"
+                  body="Add movements in the split editor to start logging."
+                  action={<Button variant="outline" size="sm" onClick={() => setEditorOpen(true)}><Pencil /> Edit split</Button>}
+                />
+              )}
+            </>
+          ) : (
+            <>
+              <SectionHeader index="01" title="Protocol" caption="Your training split is empty." />
+              <EmptyState
+                title="No training days yet"
+                body="Create your first day and the week will start keeping score."
+                action={<Button variant="primary" size="sm" onClick={() => setEditorOpen(true)}><Pencil /> Build split</Button>}
+              />
+            </>
+          )}
         </section>
-      )}
 
-      <section className="mt-8">
-        <SectionHeader index="02" title="Training signals" caption="Useful feedback without dashboard noise." />
-        <div className="grid grid-cols-2 gap-3">
-          <Insight
-            icon={<Trophy size={18} />}
-            label="PR output"
-            value={setLogs.length ? String(prCount) : "—"}
-            note={setLogs.length ? (prCount === 1 ? "set" : "sets") : "no sets logged"}
-            color="var(--success)"
-          />
-          <Insight
-            icon={<TimerReset size={18} />}
-            label="Rest control"
-            value={rest.score === null ? "—" : String(rest.score)}
-            note={rest.score === null ? `${rest.observations} of 3 rests` : "% on target"}
-            color="var(--steps)"
-          />
-        </div>
-        <div className="panel mt-3 flex min-h-[72px] w-full items-center gap-3 px-4 text-left">
-          <span className="icon-tile text-[var(--accent-strong)]"><BarChart3 size={18} /></span>
-          <div className="flex-1">
-            <p className="m-0 text-sm font-bold">Overload detection active</p>
-            <p className="mt-1 text-[10px] text-white/32">
-              {rest.medianSeconds === null
-                ? "A PR requires a 1%+ e1RM improvement over the same set."
-                : `Median rest ${formatDuration(rest.medianSeconds)} across ${rest.observations} measured rests.`}
-            </p>
+        <aside className="contents lg:sticky lg:top-8 lg:col-start-3 lg:row-start-1 lg:row-span-2 lg:flex lg:flex-col lg:gap-6 lg:self-start">
+          <div className="order-2 min-w-0 md:order-none md:col-span-2 md:col-start-2 md:row-start-1">
+            {selectedDay ? (
+              <SessionStrip
+                key={current?.id ?? "idle"}
+                session={current}
+                setLogs={setLogs}
+                dayName={selectedDay.name}
+                onStart={() => {
+                  if (startSession(selectedDay.id)) showToast(`${selectedDay.name} session started`);
+                }}
+                onFinish={() => {
+                  finishSession();
+                  showToast("Session finished");
+                }}
+              />
+            ) : (
+              <Card className="h-full">
+                <CardHeader><CardTitle>Session</CardTitle></CardHeader>
+                <CardContent>
+                  <p className="number-font text-4xl font-semibold leading-none text-faint-foreground">—</p>
+                  <p className="mt-2 text-xs text-muted-foreground">Add a training day to time a session.</p>
+                </CardContent>
+              </Card>
+            )}
           </div>
-          <ChevronRight size={16} className="text-white/18" />
-        </div>
-      </section>
+
+          <Card className="order-4 min-w-0 md:order-none md:col-start-2 md:row-start-3">
+            <CardHeader>
+              <div className="min-w-0">
+                <CardTitle>Weekly protocol</CardTitle>
+                <CardDescription>Plan days trained this week</CardDescription>
+              </div>
+              {cycle.completed > 0 ? (
+                <Badge variant={onPace ? "success" : "warning"}><Activity size={11} /> {onPace ? "On pace" : "Behind"}</Badge>
+              ) : null}
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-end justify-between gap-4">
+                <p className="number-font text-4xl font-semibold leading-none">
+                  {cycle.planned > 0 ? String(cycle.completed).padStart(2, "0") : "—"}
+                  {cycle.planned > 0 ? <span className="ml-1 text-lg font-medium tracking-normal text-subtle-foreground">/{String(cycle.planned).padStart(2, "0")}</span> : null}
+                </p>
+                <div className="text-right">
+                  <p className="number-font text-2xl font-semibold leading-none">
+                    {averageMinutes === null ? "—" : averageMinutes}
+                    {averageMinutes !== null ? <span className="ml-1 text-xs font-medium tracking-normal text-subtle-foreground">min</span> : null}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">{averageMinutes === null ? "no finished sessions" : "avg session"}</p>
+                </div>
+              </div>
+              {plan.length ? (
+                <div className="mt-5 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.max(1, plan.length)}, minmax(0, 1fr))` }}>
+                  {plan.map((day) => {
+                    const trained = cycle.completedDayIds.includes(day.id);
+                    return (
+                      <div key={day.id} className="min-w-0 space-y-1.5 text-center">
+                        <span className={cn("block h-1 rounded-full", trained ? "bg-data-1" : "bg-data-4")} />
+                        <span className="block truncate text-xs uppercase tracking-[0.04em] text-subtle-foreground">{day.name.slice(0, 3)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="mt-4 text-xs text-muted-foreground">Add a training day to track the week.</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="order-5 min-w-0 md:order-none md:col-start-3 md:row-start-3">
+            <CardHeader>
+              <div>
+                <CardTitle>Training signals</CardTitle>
+                <CardDescription>Feedback without dashboard noise</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-3">
+                <Insight
+                  icon={<Trophy size={14} className="text-success" />}
+                  label="PR output"
+                  value={setLogs.length ? String(prCount) : "—"}
+                  note={setLogs.length ? (prCount === 1 ? "set" : "sets") : "no sets logged"}
+                />
+                <Insight
+                  icon={<TimerReset size={14} />}
+                  label="Rest control"
+                  value={rest.score === null ? "—" : String(rest.score)}
+                  note={rest.score === null ? `${rest.observations} of 3 rests` : "% on target"}
+                />
+              </div>
+            </CardContent>
+            <CardFooter className="gap-3">
+              <BarChart3 size={14} className="shrink-0 text-subtle-foreground" />
+              <p className="text-xs text-muted-foreground">
+                {rest.medianSeconds === null
+                  ? "A PR requires a 1%+ e1RM improvement over the same set."
+                  : `Median rest ${formatDuration(rest.medianSeconds)} across ${rest.observations} measured rests.`}
+              </p>
+            </CardFooter>
+          </Card>
+        </aside>
+      </div>
 
       <WorkoutEditorSheet key={editorOpen ? "editor-open" : "editor-closed"} open={editorOpen} onOpenChange={setEditorOpen} plan={plan} onSave={(next) => { setWorkoutPlan(next); showToast("Training protocol updated"); }} />
     </main>
+  );
+}
+
+/** Horizontal chip strip below `md`; a vertical, sticky day list from `md` up. */
+function DayNav({
+  plan,
+  selectedId,
+  trainedIds,
+  onSelect,
+  onAdd,
+}: {
+  plan: WorkoutDay[];
+  selectedId: string | undefined;
+  trainedIds: string[];
+  onSelect: (id: string) => void;
+  onAdd: () => void;
+}) {
+  return (
+    <nav
+      aria-label="Training days"
+      className="order-1 min-w-0 md:order-none md:col-start-1 md:row-start-1 md:row-span-3 md:self-start md:sticky md:top-8"
+    >
+      <p className="hidden text-xs font-medium uppercase tracking-[0.06em] text-subtle-foreground md:mb-3 md:block">Days</p>
+      <div className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-col md:gap-1 md:overflow-visible md:px-0 md:pb-0">
+        {plan.map((day, index) => {
+          const active = day.id === selectedId;
+          const trained = trainedIds.includes(day.id);
+          return (
+            <button
+              key={day.id}
+              type="button"
+              aria-pressed={active}
+              onClick={() => onSelect(day.id)}
+              className={cn(
+                "pressable relative flex min-w-[132px] shrink-0 items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors md:w-full md:min-w-0",
+                active ? "border-border text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {active ? <motion.span layoutId="workout-day" transition={T.layout} className="absolute inset-0 rounded-lg bg-accent" /> : null}
+              <span className="number-font relative font-mono text-xs text-subtle-foreground">{String(index + 1).padStart(2, "0")}</span>
+              <span className="relative min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium">{day.name}</span>
+                <span className="number-font mt-0.5 hidden text-xs text-subtle-foreground md:block">
+                  {day.exercises.length} {day.exercises.length === 1 ? "exercise" : "exercises"}
+                </span>
+              </span>
+              {trained ? (
+                <span className="relative flex items-center text-success" title="Trained this week">
+                  <Check size={14} aria-hidden />
+                  <span className="sr-only">Trained this week</span>
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
+        {!plan.length ? (
+          <Button variant="outline" size="sm" onClick={onAdd} className="shrink-0 md:w-full">Add a day</Button>
+        ) : null}
+      </div>
+    </nav>
   );
 }
 
@@ -184,14 +303,20 @@ function SessionStrip({
 
   if (!session) {
     return (
-      <button onClick={onStart} className="panel pressable mt-3 flex min-h-[72px] w-full items-center gap-3 px-4 text-left">
-        <span className="icon-tile text-[var(--accent-strong)]"><Play size={18} /></span>
-        <div className="flex-1">
-          <p className="m-0 text-sm font-bold">Start {dayName} session</p>
-          <p className="mt-1 text-[10px] text-white/32">Timing a session records its real duration.</p>
-        </div>
-        <ChevronRight size={16} className="text-white/18" />
-      </button>
+      <Card className="h-full">
+        <CardHeader>
+          <div className="min-w-0">
+            <CardTitle>Session</CardTitle>
+            <CardDescription>Timing a session records its real duration.</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="number-font text-4xl font-semibold leading-none text-faint-foreground">0:00</p>
+          <Button variant="primary" size="md" onClick={onStart} className="mt-4 w-full sm:w-auto md:w-full">
+            <Play /> Start {dayName}
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -200,17 +325,22 @@ function SessionStrip({
   const volume = sessionVolumeKg(session.id, setLogs);
 
   return (
-    <div className="panel mt-3 flex min-h-[72px] items-center gap-3 px-4 py-3">
-      <span className="icon-tile text-[var(--success)]"><Activity size={18} /></span>
-      <div className="min-w-0 flex-1">
-        <p className="m-0 flex items-center gap-1.5 font-mono text-[8px] font-black uppercase tracking-[0.16em] text-[var(--success)]">Live · {session.dayName}</p>
-        <p className="number-font mt-1 text-[17px] font-black leading-none">{formatDuration(elapsed)}</p>
-        <p className="mt-1.5 text-[10px] text-white/32">{completed} {completed === 1 ? "set" : "sets"} · {formatNumber(Math.round(volume))} kg volume</p>
-      </div>
-      <button onClick={onFinish} className="secondary-action pressable flex min-h-11 items-center gap-1.5 rounded-[13px] px-3.5 text-[10px] font-black">
-        <Square size={12} /> Finish
-      </button>
-    </div>
+    <Card className="h-full">
+      <CardHeader>
+        <p className="flex items-center gap-1.5 font-mono text-xs font-medium uppercase tracking-[0.08em] text-brand">
+          <Activity size={12} aria-hidden /> Live · {session.dayName}
+        </p>
+      </CardHeader>
+      <CardContent>
+        <p className="number-font text-4xl font-semibold leading-none" aria-live="off">{formatDuration(elapsed)}</p>
+        <p className="number-font mt-2 text-xs text-muted-foreground">
+          {completed} {completed === 1 ? "set" : "sets"} · {formatNumber(Math.round(volume))} <span className="text-subtle-foreground">kg volume</span>
+        </p>
+        <Button variant="secondary" size="sm" onClick={onFinish} className="mt-4">
+          <Square /> Finish
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -223,10 +353,15 @@ function formatDuration(totalSeconds: number) {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-function SectionHeader({ index, title, caption }: { index: string; title: string; caption: string }) {
-  return <div className="mb-3 px-1"><div className="mb-1 flex items-center gap-2"><span className="section-index">{index}</span><span className="section-rule" /></div><h2 className="section-title">{title}</h2><p className="section-caption">{caption}</p></div>;
-}
-
-function Insight({ icon, label, value, note, color }: { icon: React.ReactNode; label: string; value: string; note: string; color: string }) {
-  return <div className="panel p-4"><span className="icon-tile" style={{ color }}>{icon}</span><p className="mb-1 mt-5 text-[10px] font-bold uppercase tracking-[0.07em] text-white/30">{label}</p><p className="number-font m-0 text-[28px] font-black" style={{ color }}>{value}<span className="ml-1 text-[9px] font-bold tracking-normal text-white/28">{note}</span></p></div>;
+function Insight({ icon, label, value, note }: { icon: React.ReactNode; label: string; value: string; note: string }) {
+  return (
+    <DataTile className="min-w-0">
+      <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.06em] text-subtle-foreground">
+        {icon}
+        <span className="truncate">{label}</span>
+      </div>
+      <p className="number-font mt-2 text-2xl font-semibold leading-none">{value}</p>
+      <p className="mt-1 truncate text-xs text-muted-foreground">{note}</p>
+    </DataTile>
+  );
 }
