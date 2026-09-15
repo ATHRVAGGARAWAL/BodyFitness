@@ -64,16 +64,22 @@ function ClerkSession({ children }: { children: React.ReactNode }) {
     await clerk.signOut({ redirectUrl: "/" });
   }, [clerk]);
 
+  // Memoised on primitive fields so sync-status updates never mint a new user object
+  // (which would re-run every effect keyed on `user` and loop the sync).
+  const id = user?.id ?? null;
+  const email = user?.primaryEmailAddress?.emailAddress ?? "";
+  const displayName = user?.fullName || user?.firstName || user?.username || null;
+  const imageUrl = user?.imageUrl || null;
+  const accountUser = useMemo<AccountUser | null>(
+    () => (isSignedIn && id ? { id, email, displayName, imageUrl } : null),
+    [displayName, email, id, imageUrl, isSignedIn],
+  );
+
   const value = useMemo<SessionContextValue>(() => ({
     status: !isLoaded ? "loading" : isSignedIn ? "signed-in" : "signed-out",
-    user: isSignedIn && user ? {
-      id: user.id,
-      email: user.primaryEmailAddress?.emailAddress ?? "",
-      displayName: user.fullName || user.firstName || user.username || null,
-      imageUrl: user.imageUrl || null,
-    } : null,
+    user: accountUser,
     sync, syncError, lastSyncedAt, setSync, signOut,
-  }), [isLoaded, isSignedIn, lastSyncedAt, setSync, signOut, sync, syncError, user]);
+  }), [accountUser, isLoaded, isSignedIn, lastSyncedAt, setSync, signOut, sync, syncError]);
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

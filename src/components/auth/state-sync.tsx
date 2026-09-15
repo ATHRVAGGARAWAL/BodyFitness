@@ -15,13 +15,14 @@ const PUSH_DEBOUNCE_MS = 1_500;
  */
 export function StateSync() {
   const { status, user, setSync } = useSession();
+  const userId = user?.id ?? null;
   const hydrated = useBodyFitnessStore((state) => state.hydrated);
   const revision = useRef<number | null>(null);
   const applyingRemote = useRef(false);
   const timer = useRef<number | null>(null);
 
   useEffect(() => {
-    if (status !== "signed-in" || !user || !hydrated) return;
+    if (status !== "signed-in" || !userId || !hydrated) return;
     let cancelled = false;
 
     const applyRemote = (remote: Record<string, unknown>) => {
@@ -89,7 +90,7 @@ export function StateSync() {
       window.removeEventListener("online", onOnline);
       if (timer.current) window.clearTimeout(timer.current);
     };
-  }, [hydrated, setSync, status, user]);
+  }, [hydrated, setSync, status, userId]);
 
   return null;
 }
